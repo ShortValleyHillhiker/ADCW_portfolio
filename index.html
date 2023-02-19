@@ -12,7 +12,20 @@
       @media (prefers-color-scheme: dark) {
         body {
           background-color: #080808;
+          font-family: "Helvetica", sans-serif;
           color: #e8e8e8;
+        }
+        .btn {
+          color: #e8e8e8;
+          border: 1px solid #e8e8e8;
+        }
+        .btn.active {
+          background-color: #e8e8e8;
+          color: #080808;
+        }
+        img {
+          -webkit-filter: brightness(0.85);
+          filter: brightness(0.85);
         }
       }
       @media (prefers-color-scheme: light) {
@@ -20,21 +33,133 @@
           background-color: #fff;
           color: #080808;
         }
-      }
-      body {
-        font-family: "Helvetica", sans-serif;
+        .btn {
+          color: #080808;
+          border: 1px solid #080808;
+        }
+        .btn.active {
+          background-color: #080808;
+          color: #e8e8e8;
+        }
       }
       main {
         margin: auto;
         max-width: 780px;
       }
-      section {
-        min-height: -webkit-fill-available;
-        min-height: 90vh;
+      a {
+        min-width: 150px;
+        width: calc(36% - 4.15rem);
+      }
+      img,
+      .text {
+        min-width: 150px;
         width: 100%;
-        display: grid;
+        display: inline-block;
+      }
+      a, a img {
+        display: none;
+        -webkit-box-shadow: 0px 11px 17px -10px rgba(0, 0, 0, 0.59);
+        box-shadow: 0px 11px 17px -10px rgba(0, 0, 0, 0.59);
+        -webkit-transition: cubic-bezier(0.06, 0.8, 0.35, 1.1) 0.66s;
+        -o-transition: cubic-bezier(0.06, 0.8, 0.35, 1.1) 0.66s;
+        transition: cubic-bezier(0.06, 0.8, 0.35, 1.1) 0.66s;
+      }
+      a.show, a.show img {
+        display: block;
+      }
+      a:nth-child(2n) {
+        -webkit-transform: rotate(-8deg) !important;
+        -ms-transform: rotate(-8deg) !important;
+        transform: rotate(-8deg) !important;
+      }
+      a:nth-child(3n) {
+        -webkit-transform: rotate(7deg) !important;
+        -ms-transform: rotate(7deg) !important;
+        transform: rotate(7deg) !important;
+      }
+      a:nth-child(5n) {
+        -webkit-transform: rotate(-8deg);
+        -ms-transform: rotate(-8deg);
+        transform: rotate(-8deg);
+      }
+      a:nth-child(11n) {
+        -webkit-transform: rotate(-3deg);
+        -ms-transform: rotate(-3deg);
+        transform: rotate(-3deg);
+      }
+      a:nth-child(13n) {
+        -webkit-transform: rotate(2deg);
+        -ms-transform: rotate(2deg);
+        transform: rotate(2deg);
+      }
+      a:nth-child(17n) {
+        -webkit-transform: rotate(9deg);
+        -ms-transform: rotate(9deg);
+        transform: rotate(9deg);
+      }
+      a:nth-child(2n + 1) {
+        -webkit-transform: rotate(11deg);
+        -ms-transform: rotate(11deg);
+        transform: rotate(11deg);
+      }
+      a:nth-child(3n + 2) {
+        -webkit-transform: rotate(18deg);
+        -ms-transform: rotate(18deg);
+        transform: rotate(18deg);
+      }
+      a:nth-child(5n + 3) {
+        -webkit-transform: rotate(5deg);
+        -ms-transform: rotate(5deg);
+        transform: rotate(5deg);
+      }
+      a:nth-child(11n + 5) {
+        -webkit-transform: rotate(-5deg);
+        -ms-transform: rotate(-5deg);
+        transform: rotate(-5deg);
+      }
+      a:nth-child(13n + 11) {
+        -webkit-transform: rotate(-2deg);
+        -ms-transform: rotate(-2deg);
+        transform: rotate(-2deg);
+      }
+      a:nth-child(17n + 13) {
+        -webkit-transform: rotate(2deg);
+        -ms-transform: rotate(2deg);
+        transform: rotate(2deg);
+      }
+      a:hover, a:hover {
+        -webkit-transform: scale(133%) rotate(0) !important;
+        -ms-transform: scale(133%) rotate(0) !important;
+        transform: scale(133%) rotate(0) !important;
+        z-index: 99;
+        cursor: pointer;
+      }
+      section {
+        min-height: 33vh;
+        width: 100%;
+      }
+      section:first-child {
+        min-height: 50vh;
+      }
+      section.intro {
+        display: -webkit-box;
+        display: -ms-flexbox;
+        display: flex;
+        -webkit-box-pack: center;
+        -ms-flex-pack: center;
+        justify-content: center;
+        -webkit-box-align: center;
+        -ms-flex-align: center;
         align-items: center;
-        justify-items: center;
+      }
+      .intro * {
+        margin: 1rem 0;
+      }
+      .intro *:last-child {
+        margin-bottom: 0;
+      }
+      section.individuals {
+        margin-bottom: 20vh;
       }
       h1 {
         margin: 0.33rem 0;
@@ -48,15 +173,310 @@
         font-size: clamp(0.95rem, 1.5vw, 1.05rem);
         line-height: 125%;
       }
+      section.individuals div,
+      section.teams div {
+        display: -webkit-box;
+        display: -ms-flexbox;
+        display: flex;
+        -webkit-box-orient: horizontal;
+        -webkit-box-direction: normal;
+        -ms-flex-direction: row;
+        flex-direction: row;
+        -webkit-box-align: center;
+        -ms-flex-align: center;
+        align-items: center;
+        -webkit-box-pack: center;
+        -ms-flex-pack: center;
+        justify-content: center;
+        -ms-flex-wrap: wrap;
+        flex-wrap: wrap;
+        gap: clamp(0.75rem, 2.5vw, 3rem);
+      }
+      @media only screen and (max-width: 600px),
+        only screen and (max-height: 600px) and (orientation: landscape) {
+        img, a
+        .text {
+          width: calc(50% - 1rem);
+          min-width: 125px;
+          image-rendering: crisp-edges;
+        }
+      }
+      .btn {
+        outline: none;
+        background-color: rgba(0, 0, 0, 0);
+        padding: 12px 16px;
+        cursor: pointer;
+        border-radius: 1000px;
+      }
+      .teams div img {
+        display: block !important;
+      }
+      #myBtnContainer {
+        margin-bottom: 2rem;
+      }
     </style>
 
     <main>
       <section class="intro">
         <div>
           <h1>En färgstark reklampaus</h1>
-          <p>Vi ses den 20:e februari på Condecco Kompassen!</p>
+          <p>Vi är klass ADCW22 och går på LIA i april 2023.</p>
+          <p>Nedan finner du länkar till alla våra portföljer.</p>
+          <div id="myBtnContainer">
+            <button class="btn active" onclick="filterSelection('all')">
+              ADCW
+            </button>
+            <button class="btn" onclick="filterSelection('show_cw')">CW</button>
+            <button class="btn" onclick="filterSelection('show_ad')">AD</button>
+          </div>
+        </div>
+      </section>
+      <section class="individuals" id="test">
+        <div>
+          <a href="https://amandalinden.se" target="_blank" class="column show_cw"><img
+            src="img_solo\adcw_0031_Amanda.jpg"
+            alt="Amanda Lindén"
+            class="hidden"
+          />
+          <a href="https://andreaastrand.wixsite.com/portfolio" target="_blank" class="column show_cw"><img
+            src="img_solo\adcw_0030_Andrea.jpg"
+            alt="Andrea Åstrand"
+            class="hidden"
+          /></a>
+          <a href="https://drive.google.com/drive/folders/1mRVO3U76oZ32K36niFQbOdY7RsUiP7w4" target="_blank" class="column show_ad"><img
+            src="img_solo\adcw_0029_Angelica.jpg"
+            alt="Angelica Algehov"
+            class="hidden"
+          /></a>
+          <a href="https://www.axelbostromportfolio.com" target="_blank" class="column show_ad"><img
+            src="img_solo\adcw_0028_Axel.jpg"
+            alt="Axel Boström"
+            class="hidden"
+          /></a>
+          <a href="https://drive.google.com/file/d/10wCE6EkOgpb8t0H8dpzh3PWfXetfWaYZ/view?usp=sharing" target="_blank" class="column show_cw"><img
+            src="img_solo\adcw_0027_Björn.jpg"
+            alt="Björn Torstensson"
+            class="hidden"
+          /></a>
+          <a href="https://brianlaker.cargo.site" target="_blank" class="column show_ad"><img
+            src="img_solo\adcw_0026_Brian.jpg"
+            alt="Brian Laker"
+            class="hidden"
+          /></a>
+          <a href="https://camillakengo.wixsite.com/camillakengo" target="_blank" class="column show_cw"><img
+            src="img_solo\adcw_0025_Camilla.jpg"
+            alt="Camilla Kengo"
+            class="hidden"
+          /></a>
+          <a href="https://drive.google.com/file/d/1ml0yh3KSyY4rHNBviBF66HKzkN2GyfLo/view?usp=share_link" target="_blank" class="column show_cw"><img
+            src="img_solo\adcw_0024_Christoffer.jpg"
+            alt="Christoffer Hägglin"
+            class="hidden"
+          /></a>
+          <a href="https://donnalee.se" target="_blank" class="column show_ad"><img
+            src="img_solo\adcw_0023_Donna.jpg"
+            alt="Donna Lee"
+            class="hidden"
+          /></a>
+          <a href="https://eddieandjesper.com/" target="_blank" class="column show_cw"><img
+            src="img_solo\adcw_0022_Eddie.jpg"
+            alt="Eddie Nylund"
+            class="hidden"
+          /></a>
+          <a href="https://www.elinasandstrom.se" target="_blank" class="column show_ad"><img
+            src="img_solo\adcw_0021_Elina.jpg"
+            alt="Elina Sandström"
+            class="hidden"
+          /></a>
+          <a href="https://emartdirector.wixsite.com/portfolio" target="_blank" class="column show_ad"><img
+            src="img_solo\adcw_0020_Emelie.jpg"
+            alt="Emelie Ljungberg"
+            class="hidden"
+          /></a>
+          <a href="https://emilcarlberg.wixsite.com/copy" target="_blank" class="column show_cw"><img
+            src="img_solo\adcw_0019_Emil.jpg"
+            alt="Emil Carlberg"
+            class="hidden"
+          /></a>
+          <a href="https://evelynaira94.wixsite.com/evelynaira" target="_blank" class="column show_ad"><img
+            src="img_solo\adcw_0018_Evelyn.jpg"
+            alt="Evelyn Aira"
+            class="hidden"
+          /></a>
+          <a href="http://fannyschough.com" target="_blank" class="column show_cw"><img
+            src="img_solo\adcw_0017_Fanny.jpg"
+            alt="Fanny Schough"
+            class="hidden"
+          /></a>
+          <a href="https://gabriellindersson.com" target="_blank" class="column show_ad"><img
+            src="img_solo\adcw_0016_Gabriel.jpg"
+            alt="Gabriel Lindersson"
+            class="hidden"
+          /></a>
+          <a href="https://www.isabelleryden.com" target="_blank" class="column show_cw"><img
+            src="img_solo\adcw_0015_Isabelle.jpg"
+            alt="Isabelle Rydén"
+            class="hidden"
+          /></a>
+          <a href="https://www.isoldacopy.com" target="_blank" class="column show_cw"><img
+            src="img_solo\adcw_0014_Isolda.jpg"
+            alt="Isolda Delgado"
+            class="hidden"
+          /></a>
+          <a href="https://eddieandjesper.com/" target="_blank" class="column show_ad"><img
+            src="img_solo\adcw_0013_Jesper.jpg"
+            alt="Jesper Lindgren"
+            class="hidden"
+          /></a>
+          <a href="https:/hardinger.se" target="_blank" class="column show_ad"><img
+            src="img_solo\adcw_0012_Josefin.jpg"
+            alt="Josefin Hardinger"
+            class="hidden"
+          /></a>
+          <a href="https://josefinejerkin.com" target="_blank" class="column  show_ad"><img
+            src="img_solo\adcw_0011_Josefine J.jpg"
+            alt="Josefine Jerkin"
+            class="hidden"
+          /></a>
+          <a href="https://drive.google.com/file/d/1Gy7mc1BKIfA89OPhF1EL9K28Xzkd85nl/view?usp=sharing" target="_blank" class="column show_cw"><img
+            src="img_solo\adcw_0010_Joshua.jpg"
+            alt="Joshua Amirose"
+            class="hidden"
+          /></a>
+          <a href="https://julmar1103.myportfolio.com" target="_blank" class="column show_cw"><img
+            src="img_solo\adcw_0009_Julius.jpg"
+            alt="Julius Marstorp"
+            class="hidden"
+          /></a>
+          <a href="https://drive.google.com/drive/folders/1ek6zGmPVmOducwtfeHxxHBWeW2Hkkmyc" class="column show_cw"><img
+            src="img_solo\adcw_0008_Kattis.jpg"
+            alt="Kattis Trollregn"
+            class="hidden"
+          /></a>
+          <a href="https://www.linafremlen.com" target="_blank" class="column show_cw"><img
+            src="img_solo\adcw_0007_Lina.jpg"
+            alt="Lina Fremlén"
+            class="hidden"
+          /></a>
+          <a href="https://www.linneawoll.com" target="_blank" class="column show_ad"><img
+            src="img_solo\adcw_0006_Linnéa.jpg"
+            alt="Linnéa Andréasson Woll"
+            class="hidden"
+          /></a>
+          <a href="https://ninahansson.wixsite.com/portfolio" target="_blank" class="column show_ad"><img
+            src="img_solo\adcw_0005_Nina.jpg"
+            alt="Nina Hansson"
+            class="hidden"
+          /></a>
+          <a href="https://www.noraberglundkattelus.com" target="_blank" class="column show_cw"><img
+            src="img_solo\adcw_0004_Nora.jpg"
+            alt="Nora Berglund"
+            class="hidden"
+          /></a>
+          <a href="https://drive.google.com/drive/folders/1HwfHF16RiRn-9sLAkY0i7VJLyJNPyDVt?usp=share_link" target="_blank" class="column show_cw"><img
+            src="img_solo\adcw_0003_Sebastian.jpg"
+            alt="Sebastian Boukachabia "
+            class="hidden"
+          /></a>
+          <a href="https://vennerstrom.se/" target="_blank" class="column show_ad"><img
+            src="img_solo\adcw_0002_Victor.jpg"
+            alt="Victor Vennerström"
+            class="hidden"
+          /></a>
+          <a href="https://www.behance.net/williammenke" target="_blank" class="column show_ad"><img
+            src="img_solo\adcw_0001_William M.jpg"
+            alt="William Menke"
+            class="hidden"
+          /></a>
+          <a href="https://williamthomas.se" target="_blank" class="column show_cw"><img
+            src="img_solo\adcw_0000_William T.jpg"
+            alt="William Thomas"
+            class="hidden"
+          /></a>
+        </div>
+      </section>
+      <section class="teams">
+        <h2>Teams</h2>
+        <div>
+          <p class="text">
+            Samtliga team består av en art director och en copywriter. Dessa
+            personer går att anlita både individuellt och som team. Alla har
+            individuella portfolios.
+          </p>
+          <a href="https://eddieandjesper.com/" target="_blank" class="show"><img src="img_teams\teams_0007_Eddie _ Jesper.jpg" alt="Eddie & Jesper" /></a>
+          <a target="_blank" class="show"><img src="img_teams\teams_0006_Elina _ William.jpg" alt="Elina & William T" /></a>
+          <a target="_blank" class="show"><img src="img_teams\teams_0005_Fanny _ Josefin.jpg" alt="Fanny & Josefin" /></a>
+          <a target="_blank" class="show"><img src="img_teams\teams_0004_Gabriel _ Sebastian.jpg" alt="Gabriel & Sebastian" /></a>
+          <a target="_blank" class="show"><img src="img_teams\teams_0003_Isolda _ Angelica.jpg" alt="Isolda & Angelica" /></a>
+          <a target="_blank" class="show"><img src="img_teams\teams_0002_Josefine _ Julius.jpg" alt="Josefine & Julius" /></a>
+          <a target="_blank" class="show"><img src="img_teams\teams_0001_Lina _ Linnéa.jpg" alt="Lina & Linnéa" /></a>
+          <a target="_blank" class="show"><img src="img_teams\teams_0000_Nora _ Axel.jpg" alt="Nora & Axel" /></a>
         </div>
       </section>
     </main>
+
+    <script>
+      const imgOptions = {};
+      const imgObserver = new IntersectionObserver((entries, imgObserver) => {
+        entries.forEach((entry) => {
+          if (!entry.isIntersecting) return;
+
+          const img = entry.target;
+          img.src = img.src.replace("w=10&", "w=800&");
+          imgObserver.unobserve(entry.target);
+        });
+      }, imgOptions);
+
+      images.forEach((img) => {
+        imgObserver.observe(img);
+      });
+    </script>
+
+    <script>
+      filterSelection("all");
+      function filterSelection(c) {
+        var x, i;
+        x = document.getElementsByClassName("column");
+        if (c == "all") c = "";
+        for (i = 0; i < x.length; i++) {
+          w3RemoveClass(x[i], "show");
+          if (x[i].className.indexOf(c) > -1) w3AddClass(x[i], "show");
+        }
+      }
+
+      function w3AddClass(element, name) {
+        var i, arr1, arr2;
+        arr1 = element.className.split(" ");
+        arr2 = name.split(" ");
+        for (i = 0; i < arr2.length; i++) {
+          if (arr1.indexOf(arr2[i]) == -1) {
+            element.className += " " + arr2[i];
+          }
+        }
+      }
+
+      function w3RemoveClass(element, name) {
+        var i, arr1, arr2;
+        arr1 = element.className.split(" ");
+        arr2 = name.split(" ");
+        for (i = 0; i < arr2.length; i++) {
+          while (arr1.indexOf(arr2[i]) > -1) {
+            arr1.splice(arr1.indexOf(arr2[i]), 1);
+          }
+        }
+        element.className = arr1.join(" ");
+      }
+
+      // Add active class to the current button (highlight it)
+      var btnContainer = document.getElementById("myBtnContainer");
+      var btns = btnContainer.getElementsByClassName("btn");
+      for (var i = 0; i < btns.length; i++) {
+        btns[i].addEventListener("click", function () {
+          var current = document.getElementsByClassName("active");
+          current[0].className = current[0].className.replace(" active", "");
+          this.className += " active";
+        });
+      }
+    </script>
   </body>
 </html>
