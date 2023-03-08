@@ -274,6 +274,7 @@ a {
   min-height: 50vh;
 }
 .grid-item {
+  overflow: hidden;
   cursor: pointer;
   aspect-ratio: 2/1;
   position: relative;
@@ -295,9 +296,10 @@ a {
   top: 0;
   left: 0;
   z-index: -2;
-  -webkit-filter: saturate(0) brightness(1.5);
-  filter: saturate(0) brightness(1.5);
+  -webkit-filter: saturate(0) brightness(1.45) contrast(3.5);
+  filter: saturate(0) brightness(1.45) contrast(3.5);
   content: "";
+  opacity: 0.8;
   background-position: center;
   background-repeat: no-repeat;
   background-size: cover;
