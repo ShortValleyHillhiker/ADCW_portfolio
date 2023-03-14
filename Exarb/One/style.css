@@ -44,7 +44,7 @@ nav {
   gap: 1rem;
   width: 100%;
   padding: 1rem 0;
-  margin-bottom: 6rem;
+  margin-bottom: 12rem;
 }
 nav span {
   display: -webkit-box;
@@ -226,4 +226,24 @@ small {
 }
 ::selection {
   background: rgba(255, 255, 0, 0.95);
+}
+.profpic {
+  position: relative;
+}
+.profpic::before {
+  display: block;
+  content: "";
+  position: absolute;
+  width: clamp(100px, 60%, 500px);
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+  background-image: url(img/Anna.jpg);
+  aspect-ratio: 1;
+  opacity: 0.75;
+  top: clamp(-200px, -38vh, -1000px);
+  right: 0;
+  z-index: -1;
+  -webkit-filter: sepia(100%) hue-rotate(160deg);
+  filter: sepia(100%) hue-rotate(160deg);
 }

@@ -83,7 +83,7 @@ footer > div.item {
   border-right: 1px solid;
 }
 footer > div.item {
-  min-height: clamp(8rem, 25vh, 60rem);
+  min-height: 25rem;
 }
 footer > div.item:last-child {
   border: none;
@@ -274,7 +274,6 @@ a {
   min-height: 50vh;
 }
 .grid-item {
-  overflow: hidden;
   cursor: pointer;
   aspect-ratio: 2/1;
   position: relative;
@@ -296,10 +295,9 @@ a {
   top: 0;
   left: 0;
   z-index: -2;
-  -webkit-filter: saturate(0) brightness(1.45) contrast(3.5);
-  filter: saturate(0) brightness(1.45) contrast(3.5);
+  -webkit-filter: saturate(0) brightness(1.5);
+  filter: saturate(0) brightness(1.5);
   content: "";
-  opacity: 0.7;
   background-position: center;
   background-repeat: no-repeat;
   background-size: cover;
@@ -379,4 +377,32 @@ a {
     -webkit-transform: rotate(359deg);
     transform: rotate(359deg);
   }
+}
+
+.profpic {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-align: center;
+  -ms-flex-align: center;
+  align-items: center;
+  -webkit-box-pack: center;
+  -ms-flex-pack: center;
+  justify-content: center;
+  margin-bottom: -1.2rem;
+}
+.profpic::before {
+  display: block;
+  content: "";
+  position: relative;
+  width: clamp(100px, 60%, 300px);
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+  background-image: url(img/Marcus.jpg);
+  aspect-ratio: 1;
+  z-index: -1;
+  -webkit-filter: saturate(0) brightness(1.5);
+  filter: saturate(0) brightness(1.5);
+  border: var(--brdr-main);
 }
