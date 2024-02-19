@@ -253,7 +253,18 @@
       justify-content: center;
       -ms-flex-wrap: wrap;
       flex-wrap: wrap;
+    }
+
+    section.individuals div {
       gap: clamp(0.75rem, 2.5vw, 3rem);
+    }
+
+    section.teams div {
+      gap: clamp(2rem, 5vw, 3rem);
+    }
+
+    section.teams {
+      margin-bottom: 10rem;
     }
 
     @media only screen and (max-width: 600px),
@@ -274,8 +285,22 @@
       border-radius: 1000px;
     }
 
+    .teams div>a {
+      width: calc(50% - 4.15rem);
+      display: flex;
+    }
+
+
+    .teams img {
+      min-width: 100px;
+    }
+
     .teams div img {
       display: block !important;
+    }
+
+    .teams div img:last-of-type {
+      transform: rotate(-5deg) translate(-45%, -15%);
     }
 
     #myBtnContainer {
@@ -446,18 +471,54 @@
       </div>
     </section>
 
-    <!-- <section class="teams">
+    <section class="teams">
       <h2>Teams</h2>
       <div>
         <p class="text">
-          Samtliga team består av en art director och en copywriter. Dessa
-          personer går att anlita både individuellt och som team. Alla har
-          individuella portfolios.
+          Samtliga team består av en Art director och Copywriter. Vissa teams har individuella portfolios. Vissa inte.
         </p>
-        <a href="#" target="_blank" class="show"><img
-            src="img_teams\temporary.jpg" alt="Namn Namnsson" /></a>
+        <a class="show">
+          <img src="img_solo\JonathanJohansson.jpg" alt="Jonathan Johansson" />
+          <img src="img_solo\MarcusHarderOlsson.jpg" alt="Marcus Harder Olsson" />
+        </a>
+        <a class="show">
+          <img src="img_solo\TimjanHofmann.jpg" alt="Timjan Hofmann" />
+          <img src="img_solo\AntonAndersson.jpg" alt="Anton Andersson" />
+        </a>
+        <a class="show">
+          <img src="img_solo\SandraClaassenPalm.jpg" alt="Sandra Claassen Palm" />
+          <img src="img_solo\WilmaClaesson.jpg" alt="Wilma Claesson" />
+        </a>
+        <a class="show">
+          <img src="img_solo\OliviaRota.jpg" alt="Olivia Rota" />
+          <img src="img_solo\EmmaLundh.jpg" alt="Emma Lundh" />
+        </a>
+        <a class="show">
+          <img src="img_solo\JonasGalatius.jpg" alt="Jonas Galatius" />
+          <img src="img_solo\OliviaHallberg.jpg" alt="OliviaHallberg" />
+        </a>
+        <a class="show">
+          <img src="img_solo\NoomiWidell.jpg" alt="Noomi Widell" />
+          <img src="img_solo\AliciaBacklund.jpg" alt="Alicia Backlund" />
+        </a>
+        <a class="show">
+          <img src="img_solo\VictoriaBjörnefur.jpg" alt="Victoria Björnefur" />
+          <img src="img_solo\JuliaThunell.jpg" alt="Julia Thunell" />
+        </a>
+        <a class="show">
+          <img src="img_solo\RebeckaSvensson.jpg" alt="Rebecka Svensson" />
+          <img src="img_solo\CorneliaEngholm.jpg" alt="Cornelia Engholm" />
+        </a>
+        <a class="show">
+          <img src="img_solo\HenryKarlsson.jpg" alt="Henry Karlsson" />
+          <img src="img_solo\FeliciaNiklasson.jpg" alt="Felicia Niklasson" />
+        </a>
+        <a class="show">
+          <img src="img_solo\IsaLandström.jpg" alt="Isa Landström" />
+          <img src="img_solo\MatildaPersson.jpg" alt="Matilda Persson" />
+        </a>
       </div>
-    </section> -->
+    </section>
   </main>
 
   <script>
