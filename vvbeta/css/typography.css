@@ -1,10 +1,8 @@
 @import url("https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap");
 
-@import url('https://fonts.googleapis.com/css2?family=Barlow:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:ital,wght@0,100..700;1,100..700&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;1,100;1,200;1,300;1,400;1,500;1,600;1,700&display=swap');
 * {
-      font-feature-settings: var(--font--feature-settings);
+    font-feature-settings: var(--font--feature-settings);
   -moz-osx-font-smoothing: grayscale;
   -webkit-font-smoothing: antialiased;
 }
@@ -12,16 +10,15 @@
 html {
  font-family:"IBM Plex Sans", system-ui, sans-serif;
 
-    font-size: 97.5%;
-    font-weight: 475;
-    line-height: 1.325;
+    font-size: max(97.5%, 16px);
+    font-weight: 500;
+    line-height: 1.425;
 
     background-color: var(--c-bg-100);
     color: var(--c-fg-100);
     -webkit-font-smoothing: antialiased;
     
     font-optical-sizing: auto;
-    font-style: normal;
     font-variation-settings:"wdth" 57.5; 
 }
 
@@ -80,68 +77,22 @@ h6,
 .fs-4 {
     font-weight: 450;
     text-wrap: balance;
+    line-height: 1.125;
     font-variation-settings:"wdth" 87.5; 
-}
-
-h1,
-h2,
-h3,
-h4,
-h5,
-h6,
-.fs-8,
-.fs-7,
-.fs-6,
-.fs-5,
-.fs-4,
-.fs-3 {
-    margin-block: 2.25rem 1rem;
-    line-height: 1.15;
+    /* margin-block: 2.25rem 1rem; */
     letter-spacing: -0.0333em;
 }
 
 p,
-li,
 .fs-3 {
     line-height: 1.25;
     letter-spacing: 0.0222em;
     margin-block: 0;
-  text-wrap: pretty;
+    text-wrap: pretty;
 }
 
 p+p {
-    margin-block-start: 1rem;
-}
-
-ul,
-ol {
-    padding-inline-start: 2.5rem;
-    margin-block: 1rem;
-}
-
-li {
-    margin-block-end: 0.35rem;
-}
-
-ul ::marker {
-    font-size: var(--fs-1);
-}
-
-dl {
-    margin-block: 1rem;
-}
-
-dt {
-    font-weight: 600;
-    font-size: var(--fs-1);
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    margin-block-start: 1rem;
-}
-
-dd {
-    margin-inline-start: 1.5rem;
-    color: var(--c-fg-40);
+    /* margin-block-start: 1rem; */
 }
 
 a {
@@ -153,7 +104,7 @@ a {
     background-repeat: no-repeat;
     background-size: 100% 2px;
     padding: 0 1px;
-    transition: var(--timing) var(--bezier);
+    transition: background-size var(--timing) var(--bezier);
 
     line-height: inherit;
     letter-spacing: inherit;
@@ -176,4 +127,27 @@ a:active {
 a:target {
     scroll-margin-top: 2rem;
     outline: 2px solid currentColor;
+}
+
+
+/* TEMP STORAGE */
+
+body:has(.grid-tgl.active) .grid-tgl span {
+  height: 0px;
+}
+body:has(.grid-tgl.active) .grid-tgl span:nth-child(odd) {
+  height: 100%;
+  animation: gridBounce var(--timing) 2 alternate;
+  animation-delay: calc(var(--bd) * 0.06s);
+}
+@keyframes gridBounce {
+  0% {
+    height: 100%;
+  }
+  75% {
+    height: 0%;
+  }
+  100% {
+    height: 0%;
+  }
 }

@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+
+    <link rel="stylesheet" href="css/reset.css">
+    <link rel="stylesheet" href="css/typography.css">
+    <link rel="stylesheet" href="css/variables.css">
+    <link rel="stylesheet" href="css/layout.css">
+
+    <link rel="stylesheet" href="css/queries.css">
+</head>
+
+<body>
+    <main>
+        <header>
+            <nav>
+                <div class="nav-logo">
+                    VctrVnrstrm
+                </div>
+
+                <ul>
+                    <li>Item 1</li>
+                    <li>Item 1</li>
+                    <li>Item 1</li>
+                    <li>Item 1</li>
+                    <li>Item 1</li>
+                    <li>Item 1</li>
+                    <li>Item 1</li>
+                    <li>Item 1</li>
+                </ul>
+            </nav>
+            <div class="cntrls">
+                <div class="cntrl-btn grid-tgl">
+                    <span></span>
+                    <span style="--bd: 1;"></span>
+                    <span style="--bd: 2;"></span>
+                </div>
+
+                <div class="cntrl-btn theme-tgl">
+                    <div class="dots-wrapper">
+                        <div class="dot"></div>
+                        <div class="dot"></div>
+                        <div class="dot"></div>
+                        <div class="dot"></div>
+                        <div class="dot"></div>
+                        <div class="dot"></div>
+                        <div class="dot"></div>
+                        <div class="integer">
+                        </div>
+
+                    </div>
+
+                    <input type="range" min="0" max="6" step="1" value="3">
+                </div>
+            </div>
+        </header>
+
+<div class="cntrl-btn menu-tgl">
+    <span></span>
+    <span></span>
+</div>
+
+        <section>
+            <h1>Lorem ipsum dolor sit amet</h1>
+            <h2>Lorem ipsum dolor sit amet</h2>
+            <h3>Lorem ipsum dolor sit amet</h3>
+            <h4>Lorem ipsum dolor sit amet</h4>
+            <h5>Lorem ipsum dolor sit amet</h5>
+        </section>
+
+        <section>
+            <h6>Lorem ipsum dolor sit amet</h6>
+            <p class="fs-3">Lorem, ipsum dolor sit amet consectetur adipisicing elit. Ipsam libero earum reprehenderit
+                non facere voluptatum ea necessitatibus molestiae dolore.</p>
+
+            <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Eum dolorum doloremque iusto maiores <a
+                    href="#">dicta eligendi
+                    voluptatum aperiam!</a> Molestiae dolore magnam impedit animi, dolores minus, rerum velit nisi
+                laborum,
+                <a href="##">natus
+                    possimus.</a>
+            </p>
+
+            <p><b>Lorem ipsum dolor sit, amet consectetur</b> adipisicing elit. Corrupti doloribus id voluptas
+                reprehenderit
+                tempora
+                velit fuga! Eius voluptatem totam itaque aperiam nihil atque? Molestiae perferendis, temporibus ut
+                corrupti
+                aspernatur nulla!</p>
+
+            <small>Lorem ipsum dolor sit amet consectetur adipisicing elit. Iusto fugiat, soluta vel laudantium porro
+                officiis
+                beatae praesentium hic sequi maiores nulla, unde aut accusantium! Reprehenderit ipsum inventore iure ad
+                explicabo!</small>
+        </section>
+    </main>
+
+    <div class="overlay">
+        <div class="grid-overlay">
+            <div>
+                <span></span>
+                <span style="--bd:.5"></span>
+            </div>
+            <div>
+                <span style="--bd:1"></span>
+                <span style="--bd:1.5"></span>
+            </div>
+            <div>
+                <span style="--bd:2"></span>
+                <span style="--bd:2.5"></span>
+            </div>
+            <div>
+                <span style="--bd:3"></span>
+                <span style="--bd:3.5"></span>
+            </div>
+            <div>
+                <span style="--bd:4"></span>
+                <span style="--bd:4.5"></span>
+            </div>
+            <div>
+                <span style="--bd:5"></span>
+                <span style="--bd:5.5"></span>
+            </div>
+            <div>
+                <span style="--bd:6"></span>
+                <span style="--bd:6.5"></span>
+            </div>
+            <div>
+                <span style="--bd:7"></span>
+                <span style="--bd:7.5"></span>
+            </div>
+        </div>
+    </div>
+
+<script>
+document.querySelector('.menu-tgl').addEventListener('click', function() {
+    this.classList.toggle('active');
+});
+</script>
+
+    <script>
+const t = document.querySelector('.theme-tgl'),
+    i = t.querySelector('input'),
+    m = i.max;
+
+let rect;
+
+const set = v => {
+    t.className = t.className.replace(/\btheme-\d+\b/, '') + ` theme-${v}`;
+    t.style.setProperty('--index', m - v);
+};
+
+document.addEventListener('click', ({ target: el }) => {
+    if (el.closest('.grid-tgl')) el.closest('.grid-tgl').classList.toggle('active');
+    if (el.closest('.theme-tgl') && !t.classList.contains('expanded')) t.classList.add('expanded');
+    else if (!el.closest('.theme-tgl')) t.classList.remove('expanded');
+});
+
+t.addEventListener('touchstart', () => rect = t.getBoundingClientRect(), { passive: true });
+
+let rafPending = false;
+
+const handleMove = e => {
+    if (e.type === 'pointermove' && !e.buttons || !t.classList.contains('expanded')) return;
+    if (rafPending) return;
+    rafPending = true;
+    requestAnimationFrame(() => {
+        const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+        const r = rect || t.getBoundingClientRect();
+        set(Math.max(0, Math.min(m, Math.round((1 - (clientY - r.top) / r.height) * m))));
+        rafPending = false;
+    });
+};
+['pointermove', 'touchmove'].forEach(ev =>
+    t.addEventListener(ev, handleMove, { passive: ev === 'pointermove' })
+);
+
+i.oninput = e => set(e.target.value);
+
+t.onmouseenter = t.onmouseleave = e =>
+    window.matchMedia('(hover: hover)').matches && t.classList.toggle('expanded', e.type === 'mouseenter');
+
+set(i.value);
+    </script>
+
+</body>
+
+</html>

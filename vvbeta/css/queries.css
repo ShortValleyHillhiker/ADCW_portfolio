@@ -1,0 +1,91 @@
+@media (max-width: 1280px) {
+  :root {
+    --gs-1: 1fr;
+    --gs-2: repeat(2, 1fr);
+    --gs-3: repeat(3, 1fr);
+    --gs-4: repeat(6, 1fr);
+  }
+
+  .grid-overlay div:nth-child(n + 7) {
+    display: none;
+  }
+}
+
+@media (max-width: 1024px) {
+  :root {
+    --gs-1: 1fr;
+    --gs-2: 1fr;
+    --gs-3: 1fr 1fr;
+    --gs-4: repeat(3, 1fr);
+  }
+
+  section {
+    grid-column: 2 / -1;
+  }
+
+  .grid-overlay div:nth-child(n + 4) {
+    display: none;
+  }
+}
+
+@media (max-width: 768px) {
+  html {
+    font-size: max(95%, 15px);
+  }
+
+.menu-tgl {
+  display: flex;
+
+}
+body:has(.menu-tgl.active) {
+  overflow: hidden;
+}
+ nav ul {
+    position: fixed;
+    inset: 0;
+    background: var(--c-bg-100);
+    display: flex;
+    flex-direction: column;
+    padding: 7rem 1rem;
+    z-index: -1;
+    gap: .35rem;
+  opacity: 0;
+  transition: opacity var(--transition);
+    backdrop-filter: blur(4px);
+    pointer-events: none;
+  }
+ body:has(.menu-tgl.active) nav ul {
+    opacity: 1;
+    position: all;
+  }
+  nav li {
+    font-size: var(--fs-2);
+  }
+}
+
+@media (max-width: 500px) {
+  :root {
+    --gs-1: 1fr;
+    --gs-2: 1fr;
+    --gs-3: 1fr;
+    --gs-4: repeat(2, 1fr);
+  }
+
+  header,
+  section {
+    grid-column: 1 / -1;
+  }
+
+  .grid-overlay div:nth-child(n + 3) {
+    display: none;
+  }
+}
+
+@media (min-width: 768px) {}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
