@@ -31,11 +31,13 @@
 @media (max-width: 768px) {
   html {
     font-size: max(95%, 15px);
+    --gap-vp: 100vw;
   }
-
+header {
+    position: absolute;
+}
 .menu-tgl {
   display: flex;
-
 }
 body:has(.menu-tgl.active) {
   overflow: hidden;
@@ -70,7 +72,10 @@ body:has(.menu-tgl.active) {
     --gs-3: 1fr;
     --gs-4: repeat(2, 1fr);
   }
-
+.option-display h1,
+.option-display .fs-8 {
+  --fs-8: calc(var(--fs-5) * var(--fs-ratio));
+}
   header,
   section {
     grid-column: 1 / -1;

@@ -79,7 +79,6 @@ h6,
     text-wrap: balance;
     line-height: 1.125;
     font-variation-settings:"wdth" 87.5; 
-    /* margin-block: 2.25rem 1rem; */
     letter-spacing: -0.0333em;
 }
 
@@ -89,10 +88,6 @@ p,
     letter-spacing: 0.0222em;
     margin-block: 0;
     text-wrap: pretty;
-}
-
-p+p {
-    /* margin-block-start: 1rem; */
 }
 
 a {
@@ -109,26 +104,26 @@ a {
     line-height: inherit;
     letter-spacing: inherit;
 }
-
 a:hover {
     background-size: 100% 100%;
 }
-
 a:focus-visible {
     outline: 2px solid currentColor;
     outline-offset: 2px;
     border-radius: 2px;
 }
-
 a:active {
     opacity: 0.75;
 }
-
 a:target {
     scroll-margin-top: 2rem;
     outline: 2px solid currentColor;
 }
 
+small a {
+    background-image: none;
+    text-decoration: underline;
+}
 
 /* TEMP STORAGE */
 

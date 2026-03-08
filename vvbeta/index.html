@@ -10,7 +10,7 @@
     <link rel="stylesheet" href="css/typography.css">
     <link rel="stylesheet" href="css/variables.css">
     <link rel="stylesheet" href="css/layout.css">
-
+    <link rel="stylesheet" href="css/sections.css">
     <link rel="stylesheet" href="css/queries.css">
 </head>
 
@@ -58,11 +58,45 @@
                 </div>
             </div>
         </header>
+        <div class="cntrl-btn menu-tgl">
+            <span></span>
+            <span></span>
+        </div>
 
-<div class="cntrl-btn menu-tgl">
-    <span></span>
-    <span></span>
-</div>
+        <section class="introduction">
+            <div class="status">
+                <small> Art director, <a href="#">Confetti</a>, Borlänge</small>
+            </div>
+
+            <div class="options-wrapper">
+                <div class="option-slide">
+                    <div class="option-slider">
+                        <p class="msg1 selected" onclick="toggle('msg1')">Introduktion</p>
+                        <p class="msg2" onclick="toggle('msg2')">Hiss-pitch</p>
+                        <p class="msg3" onclick="toggle('msg3')">Bakgrund</p>
+                        <p class="msg4" onclick="toggle('msg4')">Intressen</p>
+                    </div>
+                </div>
+                <div class="option-display">
+                    <h1 class="msg1 selected">Mitt namn är Victor Vennerström. Jag designar varumärken och ger dem digitalt liv.</h1>
+                    <p class="msg2 fs-8">Jag är med för att konceptet aldrig ska tappa sitt grepp. Från brief till digitala upplevelser, kampnj och varumärkessystem.</p>
+                    <p class="msg3 fs-8">Ideellt, arvoderat, frilans, eget bolag och byrå. Från Luleå, Borlänge, Göteborg & Kalmar. Jag vet hur det ser ut från flera håll.</p>
+                    <p class="msg4 fs-8">Duschtenor, sommarvandrare, ritar och bygger fantasivärldar från tektoniska grunder.</p>
+                </div>
+            </div>
+        </section>
+
+
+        <section class="philosophy">
+            <div class="intro">
+                <p class="fs-7" style="margin-bottom: 3rem">
+                    Idé först,<br />
+                    funktion direkt efter.
+                </p>
+                <p>
+                    Jag tror på idéer grundade i riktiga upplevelser och system byggda för att hålla. Bra kommunikation känns igen innan den hinner analyseras.
+                </p>
+        </section>
 
         <section>
             <h1>Lorem ipsum dolor sit amet</h1>
@@ -92,10 +126,7 @@
                 corrupti
                 aspernatur nulla!</p>
 
-            <small>Lorem ipsum dolor sit amet consectetur adipisicing elit. Iusto fugiat, soluta vel laudantium porro
-                officiis
-                beatae praesentium hic sequi maiores nulla, unde aut accusantium! Reprehenderit ipsum inventore iure ad
-                explicabo!</small>
+            <small>lorem</small>
         </section>
     </main>
 
@@ -135,58 +166,80 @@
             </div>
         </div>
     </div>
-
-<script>
-document.querySelector('.menu-tgl').addEventListener('click', function() {
-    this.classList.toggle('active');
-});
-</script>
-
     <script>
-const t = document.querySelector('.theme-tgl'),
-    i = t.querySelector('input'),
-    m = i.max;
-
-let rect;
-
-const set = v => {
-    t.className = t.className.replace(/\btheme-\d+\b/, '') + ` theme-${v}`;
-    t.style.setProperty('--index', m - v);
-};
-
-document.addEventListener('click', ({ target: el }) => {
-    if (el.closest('.grid-tgl')) el.closest('.grid-tgl').classList.toggle('active');
-    if (el.closest('.theme-tgl') && !t.classList.contains('expanded')) t.classList.add('expanded');
-    else if (!el.closest('.theme-tgl')) t.classList.remove('expanded');
-});
-
-t.addEventListener('touchstart', () => rect = t.getBoundingClientRect(), { passive: true });
-
-let rafPending = false;
-
-const handleMove = e => {
-    if (e.type === 'pointermove' && !e.buttons || !t.classList.contains('expanded')) return;
-    if (rafPending) return;
-    rafPending = true;
-    requestAnimationFrame(() => {
-        const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-        const r = rect || t.getBoundingClientRect();
-        set(Math.max(0, Math.min(m, Math.round((1 - (clientY - r.top) / r.height) * m))));
-        rafPending = false;
-    });
-};
-['pointermove', 'touchmove'].forEach(ev =>
-    t.addEventListener(ev, handleMove, { passive: ev === 'pointermove' })
-);
-
-i.oninput = e => set(e.target.value);
-
-t.onmouseenter = t.onmouseleave = e =>
-    window.matchMedia('(hover: hover)').matches && t.classList.toggle('expanded', e.type === 'mouseenter');
-
-set(i.value);
+        if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+            const t = document.querySelector('.theme-tgl');
+            t.classList.add('theme-0');
+            t.querySelector('input').value = 0;
+        }
     </script>
+    <script>
+        document.querySelector('.menu-tgl').addEventListener('click', function () {
+            this.classList.toggle('active');
+        });
 
+        const toggle = (cls) => {
+            document.querySelectorAll('.introduction .selected').forEach(el => el.classList.remove('selected'));
+            document.querySelectorAll(`.${cls}`).forEach(el => el.classList.add('selected'));
+        };
+
+        const slider = document.querySelector('.option-slider');
+        const slide = document.querySelector('.option-slide');
+
+        const updateMasks = () => {
+            const { scrollLeft, scrollWidth, clientWidth } = slider;
+            slide.classList.toggle('mask-left', scrollLeft > 0);
+            slide.classList.toggle('mask-right', scrollLeft < scrollWidth - clientWidth - 1);
+        };
+
+        slider.addEventListener('scroll', updateMasks, { passive: true });
+        updateMasks();
+
+    </script>
+    <script>
+        const t = document.querySelector('.theme-tgl'),
+            i = t.querySelector('input'),
+            m = i.max;
+
+        let rect;
+
+        const set = v => {
+            t.className = t.className.replace(/\btheme-\d+\b/, '') + ` theme-${v}`;
+            t.style.setProperty('--index', m - v);
+        };
+
+        document.addEventListener('click', ({ target: el }) => {
+            if (el.closest('.grid-tgl')) el.closest('.grid-tgl').classList.toggle('active');
+            if (el.closest('.theme-tgl') && !t.classList.contains('expanded')) t.classList.add('expanded');
+            else if (!el.closest('.theme-tgl')) t.classList.remove('expanded');
+        });
+
+        t.addEventListener('touchstart', () => rect = t.getBoundingClientRect(), { passive: true });
+
+        let rafPending = false;
+
+        const handleMove = e => {
+            if (e.type === 'pointermove' && !e.buttons || !t.classList.contains('expanded')) return;
+            if (rafPending) return;
+            rafPending = true;
+            requestAnimationFrame(() => {
+                const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+                const r = rect || t.getBoundingClientRect();
+                set(Math.max(0, Math.min(m, Math.round((1 - (clientY - r.top) / r.height) * m))));
+                rafPending = false;
+            });
+        };
+        ['pointermove', 'touchmove'].forEach(ev =>
+            t.addEventListener(ev, handleMove, { passive: ev === 'pointermove' })
+        );
+
+        i.oninput = e => set(e.target.value);
+
+        t.onmouseenter = t.onmouseleave = e =>
+            window.matchMedia('(hover: hover)').matches && t.classList.toggle('expanded', e.type === 'mouseenter');
+
+        set(i.value);
+    </script>
 </body>
 
 </html>

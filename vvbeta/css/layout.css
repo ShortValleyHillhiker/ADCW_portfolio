@@ -9,7 +9,7 @@ main {
     display: grid;
     grid-column: content;
     grid-template-columns: var(--gs-4);
-    gap: var(--gap-m);
+    gap: var(--gap-vp) var(--gap-m);
     position: relative;
 }
 

@@ -44,9 +44,10 @@ html {
     --gap-m: min(1rem, 20px);
     --gap-l: min(2rem, 32px);
 
-
     --gs-1: 1fr;
     --gs-2: repeat(2, 1fr);
     --gs-3: repeat(5, 1fr);
     --gs-4: repeat(8, 1fr);
+
+    --gap-vp: 100lvh;
 }

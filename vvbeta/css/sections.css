@@ -1,0 +1,62 @@
+.introduction {
+    display: flex;
+    flex-direction: column;
+    gap: clamp(3.825rem, 10lvw, 5rem);
+}
+.options-wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: var(--gap-m);
+}
+.option-slide {
+    position: relative;
+    width: 100%;
+}
+.option-slide::after,
+.option-slide::before {
+    content: "";
+    display: block;
+    height: 100%;
+    position: absolute;
+    top: 0;
+    aspect-ratio: 4/1;
+    pointer-events: none;
+    transition: opacity 150ms ease-in-out;
+    opacity: 0;
+}
+.option-slide.mask-left::before { opacity: 1; }
+.option-slide.mask-right::after { opacity: 1; }
+.option-slide::after {
+    right: -2px;
+    background: linear-gradient(to left, var(--c-bg-100) 2%, var(--c-bg-0) 100%);
+}
+.option-slide::before {
+    left: -2px;
+    background: linear-gradient(to right, var(--c-bg-100) 2%, var(--c-bg-0) 100%);
+}
+.option-slider {
+    display: flex;
+    gap: var(--gap-m);
+    overflow: scroll;
+}
+.option-slider > p {
+    flex-shrink: 0;
+    width: fit-content;
+    color: var(--c-fg-60);
+    font-weight: 300;
+    font-variation-settings:"wdth" 100; 
+    cursor: pointer;
+}
+.option-slider > p.selected {
+    display: block;
+    font-weight: 500;
+}
+.option-slider > p.selected {
+    color: var(--c-fg-100);
+}
+.option-display > * {
+    display: none;
+}
+.option-display > *.selected {
+    display: block;
+}
