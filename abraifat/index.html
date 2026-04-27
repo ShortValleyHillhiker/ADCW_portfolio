@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Banner Previewer</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: #1a1a1a;
+      font-family: system-ui, sans-serif;
+      color: #ccc;
+      padding: 40px;
+    }
+
+    h1 {
+      font-size: 14px;
+      font-weight: 500;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: #666;
+      margin-bottom: 40px;
+    }
+
+    .banners {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 48px;
+      align-items: flex-start;
+    }
+
+    .banner-item {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .banner-label {
+      font-size: 11px;
+      color: #555;
+      letter-spacing: 0.05em;
+    }
+
+    iframe {
+      display: block;
+      border: none;
+      outline: 1px solid #333;
+    }
+  </style>
+</head>
+<body>
+  <h1>Banner Previewer</h1>
+  <div class="banners">
+    <div class="banner-item">
+      <span class="banner-label">728×90</span>
+      <iframe src="728x90.html" width="728" height="90" scrolling="no"></iframe>
+    </div>
+    <div class="banner-item">
+      <span class="banner-label">320×100</span>
+      <iframe src="320x100.html" width="320" height="100" scrolling="no"></iframe>
+    </div>
+    <div class="banner-item">
+      <span class="banner-label">300×250</span>
+      <iframe src="300x250.html" width="300" height="250" scrolling="no"></iframe>
+    </div>
+    <div class="banner-item">
+      <span class="banner-label">336×280</span>
+      <iframe src="336x280.html" width="336" height="280" scrolling="no"></iframe>
+    </div>
+    <div class="banner-item">
+      <span class="banner-label">160×600</span>
+      <iframe src="160x600.html" width="160" height="600" scrolling="no"></iframe>
+    </div>
+    <div class="banner-item">
+      <span class="banner-label">300×600</span>
+      <iframe src="300x600.html" width="300" height="600" scrolling="no"></iframe>
+    </div>
+  </div>
+</body>
+</html>
