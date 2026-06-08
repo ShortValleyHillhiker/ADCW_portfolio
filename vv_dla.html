@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DLA Ridge / Heightmap</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0d0e10">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="DLA Ridge">
+<link rel="apple-touch-icon" href="icon-180.png">
+<style>
+  :root{
+    --bg:#0d0e10; --panel:#141619; --line:#26292e; --txt:#c9ced6;
+    --dim:#7c828c; --acc:#e8e3d3; --warn:#d98b5f; --go:#7fb88a;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  body{background:var(--bg); color:var(--txt);
+    font:13px/1.4 ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+    display:flex; overflow:hidden;}
+  aside{width:272px; min-width:272px; height:100vh; overflow-y:auto;
+    background:var(--panel); border-right:1px solid var(--line);
+    padding:16px 16px 40px; display:flex; flex-direction:column; gap:18px;}
+  h1{font-size:12px; letter-spacing:.18em; text-transform:uppercase;
+    color:var(--acc); font-weight:600;}
+  h1 span{color:var(--dim); font-weight:400}
+  .grp{display:flex; flex-direction:column; gap:9px;
+    padding-bottom:16px; border-bottom:1px solid var(--line);}
+  .grp:last-child{border:0}
+  .lbl{font-size:10px; letter-spacing:.12em; text-transform:uppercase; color:var(--dim);}
+  .row{display:flex; align-items:center; gap:8px; justify-content:space-between}
+  input[type=range]{flex:1; accent-color:var(--acc); height:3px; cursor:pointer}
+  .val{width:54px; text-align:right; color:var(--acc); font-size:11px;
+    font-variant-numeric:tabular-nums}
+  button{font:inherit; font-size:11px; letter-spacing:.05em;
+    background:#1d2025; color:var(--txt); border:1px solid var(--line);
+    padding:8px 10px; border-radius:3px; cursor:pointer; transition:.12s; text-align:left;}
+  button:hover{border-color:#3a3f47; background:#23262c}
+  button.on{background:var(--acc); color:#111; border-color:var(--acc)}
+  button.go{background:var(--go); color:#0c1a0f; border-color:var(--go)}
+  button.stop{background:var(--warn); color:#1a0e08; border-color:var(--warn)}
+  button:disabled{opacity:.35; cursor:not-allowed}
+  .btns{display:grid; grid-template-columns:1fr 1fr; gap:6px}
+  .btns .wide{grid-column:1/3}
+  .tool{display:flex; gap:6px}
+  .tool button{flex:1; text-align:center}
+  .hint{font-size:10px; color:var(--dim); line-height:1.5}
+  .file{position:relative; overflow:hidden}
+  .file input{position:absolute; inset:0; opacity:0; cursor:pointer}
+  .stat{display:flex; justify-content:space-between; font-size:10px; color:var(--dim)}
+  .stat b{color:var(--acc); font-weight:400; font-variant-numeric:tabular-nums}
+  .dial{display:flex; align-items:center; gap:10px}
+  #dialPad{width:54px;height:54px;border:1px solid var(--line);border-radius:50%;
+    position:relative;cursor:pointer;flex:none;background:#1a1d22}
+  #dialDot{position:absolute;width:6px;height:6px;border-radius:50%;background:var(--warn);
+    top:50%;left:50%;transform:translate(-50%,-50%)}
+  .bar{height:4px;background:#1d2025;border:1px solid var(--line);border-radius:2px;overflow:hidden}
+  .bar>i{display:block;height:100%;background:var(--go);width:0%}
+  main{flex:1; height:100vh; display:flex; align-items:center; justify-content:center;
+    overflow:auto; padding:24px;
+    background:
+      linear-gradient(45deg,#101113 25%,transparent 25%),
+      linear-gradient(-45deg,#101113 25%,transparent 25%),
+      linear-gradient(45deg,transparent 75%,#101113 75%),
+      linear-gradient(-45deg,transparent 75%,#101113 75%);
+    background-size:22px 22px; background-position:0 0,0 11px,11px -11px,-11px 0;}
+  #wrap{position:relative; line-height:0; box-shadow:0 18px 60px rgba(0,0,0,.6)}
+  #wrap canvas,#wrap img{position:absolute; top:0; left:0}
+  #ref{position:relative}
+  #ui{cursor:crosshair; touch-action:none; -webkit-user-select:none; user-select:none}
+  .empty{color:var(--dim); text-align:center; max-width:280px; line-height:1.7}
+  .empty b{color:var(--acc); display:block; margin-bottom:8px; letter-spacing:.1em}
+</style>
+</head>
+<body>
+<aside>
+  <h1>DLA <span>/ ridge heightmap</span></h1>
+
+  <div class="grp">
+    <div class="lbl">Reference</div>
+    <button class="file wide">Load image…<input type="file" id="img" accept="image/*"></button>
+    <div class="hint">Transparent output canvas built at the image's exact pixel size, overlaid for drawing and export.</div>
+  </div>
+
+  <div class="grp">
+    <div class="lbl">Tool</div>
+    <div class="tool">
+      <button id="tMask" class="on">Mask</button>
+      <button id="tErase">Erase</button>
+      <button id="tSeed">Seed</button>
+    </div>
+    <div class="row"><span class="lbl">Brush</span>
+      <input type="range" id="brush" min="4" max="160" value="40">
+      <span class="val" id="brushV">40</span></div>
+    <div class="hint">Mask = growth region. Seeds (1px) start the brightest ridges. "Bake + new mask" locks the current mountain — the next one treats it as rock: it won't grow through it or stick to it.</div>
+    <div class="btns">
+      <button id="bakeBtn">Bake + new mask</button>
+      <button id="clrSeed">Clear seeds</button>
+      <button id="clrAll" class="wide">Clear all (incl. baked)</button>
+    </div>
+  </div>
+
+  <div class="grp">
+    <div class="lbl">Simulation</div>
+    <div class="row"><span class="lbl">Particles</span>
+      <input type="range" id="particles" min="500" max="20000" step="500" value="8000">
+      <span class="val" id="particlesV">8000</span></div>
+    <div class="row"><span class="lbl">Stick</span>
+      <input type="range" id="stick" min="5" max="100" value="100">
+      <span class="val" id="stickV">1.00</span></div>
+    <div class="row"><span class="lbl">Speed</span>
+      <input type="range" id="speed" min="50" max="3000" step="50" value="600">
+      <span class="val" id="speedV">600</span></div>
+    <div class="row"><span class="lbl">Repel</span>
+      <input type="range" id="repel" min="0" max="20" value="3">
+      <span class="val" id="repelV">3</span></div>
+    <div class="hint">Particles = target deposits before it stops (scale to mask size). Stick 1.00 = branching; lower fills denser. Speed = particles per frame. Repel = gap (px) the next mountain keeps from baked terrain.</div>
+  </div>
+
+  <div class="grp">
+    <div class="lbl">Directional grain (ridges)</div>
+    <div class="dial">
+      <div id="dialPad"><div id="dialDot"></div></div>
+      <div style="flex:1;display:flex;flex-direction:column;gap:8px">
+        <div class="row"><span class="lbl">Drift</span>
+          <input type="range" id="drift" min="0" max="100" value="0">
+          <span class="val" id="driftV">0.00</span></div>
+        <div class="hint">0 = isotropic. Higher biases walkers along the dial direction for elongated ridgelines.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="grp">
+    <div class="lbl">Rendering (height)</div>
+    <div class="row"><span class="lbl">Gamma</span>
+      <input type="range" id="gamma" min="10" max="40" value="20">
+      <span class="val" id="gammaV">2.0</span></div>
+    <div class="row"><span class="lbl">Floor</span>
+      <input type="range" id="floor" min="0" max="255" value="20">
+      <span class="val" id="floorV">20</span></div>
+    <div class="hint">Brightness = stick order: seeds brightest, later growth fades to Floor. Gamma shapes the falloff. Re-renders fully on stop.</div>
+  </div>
+
+  <div class="grp">
+    <div class="btns">
+      <button id="run" class="wide go" disabled>▶ Run</button>
+      <button id="reset">Reset growth</button>
+      <button id="export">Export PNG</button>
+    </div>
+    <div class="bar" style="margin-top:4px"><i id="prog"></i></div>
+    <div class="stat"><span>seeds</span><b id="sSeeds">0</b></div>
+    <div class="stat"><span>stuck</span><b id="sStuck">0</b></div>
+    <div class="stat"><span>baked</span><b id="sBaked">0</b></div>
+    <div class="stat"><span id="sMsgL">status</span><b id="sMsg">—</b></div>
+  </div>
+</aside>
+
+<main>
+  <div id="wrap"><div class="empty"><b>NO REFERENCE</b>Load an image. Mask a region, seed where ridges begin, set drift, run.</div></div>
+</main>
+
+<script>
+const $=id=>document.getElementById(id);
+const wrap=$('wrap');
+let W=0,H=0,N=0, imgEl=null, out=null, octx=null, ui=null, uctx=null;
+
+let mask=null;        // Uint8: 1 = allowed
+let cluster=null;     // Int32: 0 empty, 1 = seed, >=2 = stick order (active mountain)
+let baked=null;       // Uint8: 1 = locked terrain (obstacle, not a stick target)
+let bakedBright=null; // Uint8: frozen brightness of baked pixels
+let seeds=[];         // {x,y}
+let maxOrder=1, stuck=0, bakedCount=0;
+
+// sim run state
+let isNoGlue=null, spawnPix=null, repel=null, running=false, raf=0, misses=0, frame=0, renderEvery=1, runStart=0;
+
+let tool='mask', painting=false;
+const cfg={brush:40, target:8000, stick:1, speed:600,
+           drift:0, biasAng:270, gamma:2, floor:20, repel:3};
+
+const DIRS=[[-1,-1],[0,-1],[1,-1],[-1,0],[1,0],[-1,1],[0,1],[1,1]];
+const DV=[[1,0],[1,-1],[0,-1],[-1,-1],[-1,0],[-1,1],[0,1],[1,1]];     // movement
+const DA=[0,45,90,135,180,225,270,315];                              // angles for DV
+
+/* ---------- image load ---------- */
+$('img').onchange=e=>{const f=e.target.files[0]; if(!f)return;
+  const im=new Image(); im.onload=()=>{W=im.naturalWidth;H=im.naturalHeight;N=W*H;setup(im);};
+  im.src=URL.createObjectURL(f);};
+
+function setup(im){
+  wrap.innerHTML=''; wrap.style.width=W+'px'; wrap.style.height=H+'px';
+  imgEl=im; imgEl.id='ref'; imgEl.width=W; imgEl.height=H; wrap.appendChild(imgEl);
+  out=document.createElement('canvas'); out.width=W; out.height=H; wrap.appendChild(out);
+  octx=out.getContext('2d',{willReadFrequently:true});
+  ui=document.createElement('canvas'); ui.id='ui'; ui.width=W; ui.height=H; wrap.appendChild(ui);
+  uctx=ui.getContext('2d'); bindPaint();
+  mask=new Uint8Array(N); cluster=new Int32Array(N);
+  baked=new Uint8Array(N); bakedBright=new Uint8Array(N); seeds=[];
+  maxOrder=1; stuck=0; bakedCount=0; renderEvery = N>1500000?3:1;
+  $('run').disabled=false; render(); drawUI(); status('draw a mask');
+}
+
+/* ---------- order-brightness render (transparent where empty) ---------- */
+function render(){
+  if(!octx)return;
+  const img=octx.createImageData(W,H), d=img.data;
+  const g=cfg.gamma, fl=cfg.floor, sm=Math.max(1,maxOrder);
+  for(let i=0;i<N;i++){
+    if(baked[i]){ const p=i*4; const b=bakedBright[i]; d[p]=d[p+1]=d[p+2]=b; d[p+3]=255; continue; }
+    const v=cluster[i]; if(v<=0)continue;          // empty -> transparent
+    let b;
+    if(v===1) b=255;                               // seed
+    else { const nrm=1-(v/sm); b=fl+(255-fl)*Math.pow(nrm<0?0:nrm,g); b=b<0?0:b>255?255:b; }
+    const p=i*4; d[p]=d[p+1]=d[p+2]=b; d[p+3]=255;
+  }
+  octx.putImageData(img,0,0);
+}
+
+/* ---------- painting ---------- */
+let uiDirty=false, outDirty=false, flushQueued=false;
+function flushNow(){ if(outDirty){render();outDirty=false;} if(uiDirty){drawUI();uiDirty=false;} flushQueued=false; }
+function queueFlush(){ if(!flushQueued){flushQueued=true; requestAnimationFrame(flushNow);} }
+
+function bindPaint(){
+  const map=e=>{const r=ui.getBoundingClientRect();
+    return {x:Math.floor((e.clientX-r.left)*W/r.width),
+            y:Math.floor((e.clientY-r.top)*H/r.height),
+            p:(e.pointerType==='pen')?(e.pressure||0):1};};
+  // expand to coalesced samples (Pencil fires faster than pointermove)
+  const stroke=e=>{ const evs=(e.getCoalescedEvents&&e.pointerType==='pen')?e.getCoalescedEvents():[e];
+    for(const ev of evs){ const m=map(ev); paint(m.x,m.y,m.p); } };
+  ui.onpointerdown=e=>{ if(running)return; painting=true; ui.setPointerCapture(e.pointerId); stroke(e); };
+  ui.onpointermove=e=>{ if(painting)stroke(e); };
+  ui.onpointerup=()=>{ painting=false; flushNow(); };
+  ui.onpointercancel=()=>{ painting=false; flushNow(); };
+}
+function paint(x,y,pr){
+  if(pr===undefined)pr=1;
+  if(tool==='seed'){
+    if(x>=0&&y>=0&&x<W&&y<H&&mask[y*W+x]&&!baked[y*W+x]){ const i=y*W+x;
+      if(cluster[i]!==1){ seeds.push({x,y}); cluster[i]=1; stuck++; render(); } }
+    painting=false; drawUI(); updateStats(); return;
+  }
+  // pressure scales radius (pen only; mouse/touch report pr=1 -> full brush)
+  const r=Math.max(1, pr>=1 ? cfg.brush/2 : (cfg.brush/2)*(0.18+0.82*pr));
+  const v=tool==='mask'?1:0;
+  for(let dy=-r;dy<=r;dy++)for(let dx=-r;dx<=r;dx++){
+    if(dx*dx+dy*dy>r*r)continue; const px=x+dx|0,py=y+dy|0;
+    if(px<0||py<0||px>=W||py>=H)continue;
+    const i=py*W+px; mask[i]=v;
+    if(!v && cluster[i]>0){ cluster[i]=0; outDirty=true; }   // erasing removes active growth
+  }
+  uiDirty=true; queueFlush();
+}
+function drawUI(){
+  uctx.clearRect(0,0,W,H);
+  const im=uctx.createImageData(W,H),d=im.data;
+  for(let i=0;i<N;i++){ if(mask[i]&&cluster[i]<=0){d[i*4]=232;d[i*4+1]=227;d[i*4+2]=211;d[i*4+3]=26;} }
+  uctx.putImageData(im,0,0);
+  uctx.fillStyle='#d98b5f';
+  for(const s of seeds){ uctx.fillRect(s.x,s.y,1,1);
+    uctx.strokeStyle='rgba(217,139,95,.45)'; uctx.lineWidth=1;
+    uctx.beginPath();uctx.arc(s.x+0.5,s.y+0.5,4,0,7);uctx.stroke(); }
+}
+
+/* ---------- precompute teflon perimeter + interior spawn set ---------- */
+function precompute(){
+  isNoGlue=new Uint8Array(N); spawnPix=[];
+
+  // repel = baked terrain dilated by cfg.repel (a moat new growth can't enter)
+  repel=baked;
+  if(cfg.repel>0 && bakedCount>0){
+    let cur=Uint8Array.from(baked);
+    for(let it=0; it<cfg.repel; it++){
+      const nxt=Uint8Array.from(cur);
+      for(let y=0;y<H;y++)for(let x=0;x<W;x++){ const i=y*W+x; if(cur[i])continue;
+        for(let n=0;n<8;n++){ const ax=x+DIRS[n][0],ay=y+DIRS[n][1];
+          if(ax>=0&&ax<W&&ay>=0&&ay<H&&cur[ay*W+ax]){nxt[i]=1;break;} } }
+      cur=nxt;
+    }
+    repel=cur;
+  }
+
+  const edge=new Uint8Array(N);
+  for(let y=0;y<H;y++)for(let x=0;x<W;x++){ const i=y*W+x; if(!mask[i])continue;
+    let e=false;
+    for(let n=0;n<8;n++){ const nx=x+DIRS[n][0],ny=y+DIRS[n][1];
+      if(nx<0||nx>=W||ny<0||ny>=H||!mask[ny*W+nx]){e=true;break;} }
+    if(e)edge[i]=1;
+  }
+  for(let y=0;y<H;y++)for(let x=0;x<W;x++){ const i=y*W+x; if(!mask[i])continue;
+    if(edge[i]){ isNoGlue[i]=1; continue; }
+    let near=false;
+    for(let n=0;n<8;n++){ const nx=x+DIRS[n][0],ny=y+DIRS[n][1];
+      if(nx>=0&&nx<W&&ny>=0&&ny<H&&edge[ny*W+nx]){near=true;break;} }
+    if(near) isNoGlue[i]=1; else if(!repel[i]) spawnPix.push(i);
+  }
+  if(!spawnPix.length){ for(let i=0;i<N;i++)if(mask[i]&&!repel[i])spawnPix.push(i); }
+}
+
+/* ---------- simulation ---------- */
+function loop(){
+  if(!running)return;
+  const batch=cfg.speed, maxSteps=30000, stickP=cfg.stick, biasStr=cfg.drift;
+  // closest movement dir to bias angle
+  let bi=0,md=999; for(let d=0;d<8;d++){ let df=Math.abs(cfg.biasAng-DA[d]); if(df>180)df=360-df;
+    if(df<md){md=df;bi=d;} }
+  const SP=spawnPix, SPN=SP.length;
+
+  for(let b=0;b<batch;b++){
+    if(stuck-runStart>=cfg.target){ stop('complete'); return; }
+    if(misses>2000){ stop('saturated'); return; }
+    const s0=SP[(Math.random()*SPN)|0];
+    if(cluster[s0]>0){ continue; }
+    let px=s0%W, py=(s0/W)|0, steps=0, did=false;
+    while(steps<maxSteps){
+      const pi=py*W+px;
+      let hit=false;
+      if(isNoGlue[pi]===0){
+        for(let n=0;n<8;n++){ const nx=px+DIRS[n][0],ny=py+DIRS[n][1];
+          if(nx>=0&&nx<W&&ny>=0&&ny<H&&cluster[ny*W+nx]>0){hit=true;break;} }
+      }
+      if(hit && Math.random()<=stickP){
+        maxOrder++; cluster[pi]=maxOrder; stuck++; did=true; break;
+      }
+      const mv=(biasStr>0&&Math.random()<=biasStr)?bi:(Math.random()*8)|0;
+      const nx=px+DV[mv][0], ny=py+DV[mv][1];
+      if(nx>=0&&nx<W&&ny>=0&&ny<H){ const ni=ny*W+nx;
+        if(mask[ni]===1&&cluster[ni]===0&&repel[ni]===0){ px=nx; py=ny; } }
+      steps++;
+    }
+    misses = did?0:misses+1;
+  }
+  frame++;
+  if(frame%renderEvery===0) render();
+  updateStats();
+  raf=requestAnimationFrame(loop);
+}
+function startSim(){
+  if(!seeds.length){ status('add a seed'); return; }
+  precompute(); misses=0; frame=0; runStart=stuck; running=true;
+  $('run').textContent='❚❚ Stop'; $('run').classList.remove('go'); $('run').classList.add('stop');
+  status('running'); loop();
+}
+function stop(reason){
+  running=false; cancelAnimationFrame(raf); render(); updateStats();
+  $('run').textContent='▶ Run'; $('run').classList.remove('stop'); $('run').classList.add('go');
+  if(reason)status(reason);
+}
+
+/* ---------- reset / clear ---------- */
+function resetGrowth(){
+  cluster.fill(0); for(const s of seeds)cluster[s.y*W+s.x]=1;
+  maxOrder=1; stuck=seeds.length; render(); updateStats(); status('reset');
+}
+function bake(){
+  const sm=Math.max(1,maxOrder), g=cfg.gamma, fl=cfg.floor; let any=false;
+  for(let i=0;i<N;i++){ const v=cluster[i]; if(v<=0)continue; any=true;
+    let b; if(v===1)b=255;
+    else{ const nrm=1-(v/sm); b=fl+(255-fl)*Math.pow(nrm<0?0:nrm,g); b=b<0?0:b>255?255:b; }
+    baked[i]=1; bakedBright[i]=b; cluster[i]=0; bakedCount++;
+  }
+  seeds=[]; maxOrder=1; stuck=0; return any;
+}
+function bakeAndClearMask(){ if(running)stop();
+  const did=bake(); mask.fill(0);
+  render(); drawUI(); updateStats(); status(did?'baked — draw next mask':'mask cleared'); }
+function clearAll(){ if(running)stop();
+  mask.fill(0); cluster.fill(0); baked.fill(0); bakedBright.fill(0);
+  seeds=[]; maxOrder=1; stuck=0; bakedCount=0;
+  render(); drawUI(); updateStats(); status('cleared all'); }
+function clearSeeds(){ cluster.fill(0); seeds=[]; maxOrder=1; stuck=0;
+  render(); drawUI(); updateStats(); status('seeds cleared'); }
+
+/* ---------- controls ---------- */
+function status(t){ $('sMsg').textContent=t; }
+function updateStats(){ $('sSeeds').textContent=seeds.length;
+  $('sStuck').textContent=stuck.toLocaleString();
+  $('sBaked').textContent=bakedCount.toLocaleString();
+  $('prog').style.width=Math.max(0,Math.min(100,(stuck-runStart)/cfg.target*100))+'%'; }
+function slider(id,vid,fn,fmt){ const s=$(id),v=$(vid);
+  const u=()=>{fn(+s.value);v.textContent=fmt?fmt(+s.value):s.value;}; s.oninput=u; u(); }
+slider('brush','brushV',x=>cfg.brush=x);
+slider('particles','particlesV',x=>{cfg.target=x;updateStats();});
+slider('stick','stickV',x=>cfg.stick=x/100,x=>(x/100).toFixed(2));
+slider('speed','speedV',x=>cfg.speed=x);
+slider('repel','repelV',x=>cfg.repel=x);
+slider('drift','driftV',x=>cfg.drift=x/100,x=>(x/100).toFixed(2));
+slider('gamma','gammaV',x=>{cfg.gamma=x/10;if(!running)render();},x=>(x/10).toFixed(1));
+slider('floor','floorV',x=>{cfg.floor=x;if(!running)render();});
+
+// drift direction dial (screen-intuitive: drag down -> ridges flow down)
+const pad=$('dialPad'),dot=$('dialDot');
+function setDial(e){const r=pad.getBoundingClientRect();
+  const cx=r.left+r.width/2,cy=r.top+r.height/2;
+  const sa=Math.atan2(e.clientY-cy,e.clientX-cx);          // screen angle
+  cfg.biasAng=((360-(sa*180/Math.PI))%360+360)%360;        // to DA convention
+  dot.style.left=(50+Math.cos(sa)*38)+'%'; dot.style.top=(50+Math.sin(sa)*38)+'%';}
+let dd=false;
+pad.onpointerdown=e=>{dd=true;pad.setPointerCapture(e.pointerId);setDial(e);};
+pad.onpointermove=e=>{if(dd)setDial(e);};
+pad.onpointerup=()=>dd=false;
+dot.style.left='50%';dot.style.top='88%';   // default down (biasAng 270)
+
+// warn before leaving if there's unsaved work (mask drawn, seeds, growth, or baked terrain)
+window.addEventListener('beforeunload',e=>{
+  const hasWork = seeds.length || stuck>seeds.length || bakedCount>0 || (mask&&mask.some(v=>v));
+  if(hasWork){ e.preventDefault(); e.returnValue=''; }
+});
+
+function setTool(t){tool=t;
+  $('tMask').classList.toggle('on',t==='mask');
+  $('tErase').classList.toggle('on',t==='erase');
+  $('tSeed').classList.toggle('on',t==='seed');
+  $('brush').disabled=(t==='seed'); $('brush').style.opacity=(t==='seed')?'.3':'1';}
+$('tMask').onclick=()=>setTool('mask');
+$('tErase').onclick=()=>setTool('erase');
+$('tSeed').onclick=()=>setTool('seed');
+$('bakeBtn').onclick=bakeAndClearMask;
+$('clrSeed').onclick=clearSeeds;
+$('clrAll').onclick=clearAll;
+$('reset').onclick=()=>{ if(running)stop(); resetGrowth(); };
+$('run').onclick=()=>{ running?stop('stopped'):startSim(); };
+$('export').onclick=()=>{ if(!W)return; render();
+  const tmp=document.createElement('canvas'); tmp.width=W; tmp.height=H;
+  const t=tmp.getContext('2d'); t.fillStyle='#000'; t.fillRect(0,0,W,H); t.drawImage(out,0,0);
+  tmp.toBlob(b=>{const a=document.createElement('a');
+    a.href=URL.createObjectURL(b);a.download='dla-heightmap.png';a.click();},'image/png');};
+</script>
+</body>
+</html>

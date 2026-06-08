@@ -1,4 +1,0 @@
-{
-  "fields": ["test"],
-  "fontSizeVars": ["--font-size-heading", "--font-size-tagline", "--font-size-cta"]
-}
