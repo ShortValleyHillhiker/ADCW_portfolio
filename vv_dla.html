@@ -3,168 +3,296 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>DLA Ridge / Heightmap</title>
+<title>DLA</title>
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#0d0e10">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="DLA Ridge">
+<meta name="apple-mobile-web-app-title" content="DLA">
 <link rel="apple-touch-icon" href="icon-180.png">
 <style>
   :root{
-    --bg:#0d0e10; --panel:#141619; --line:#26292e; --txt:#c9ced6;
-    --dim:#7c828c; --acc:#e8e3d3; --warn:#d98b5f; --go:#7fb88a;
+    --void:#0a0b0d; --surface:#15171b; --surface2:#1d2025; --line:#2a2e35;
+    --txt:#cdd2da; --dim:#6b7178; --bone:#e8e3d3; --terra:#d98b5f;
   }
   *{box-sizing:border-box;margin:0;padding:0}
   html,body{height:100%}
-  body{background:var(--bg); color:var(--txt);
+  body{background:var(--void); color:var(--txt); overflow:hidden;
     font:13px/1.4 ui-monospace,"SF Mono",Menlo,Consolas,monospace;
-    display:flex; overflow:hidden;}
-  aside{width:272px; min-width:272px; height:100vh; overflow-y:auto;
-    background:var(--panel); border-right:1px solid var(--line);
-    padding:16px 16px 40px; display:flex; flex-direction:column; gap:18px;}
-  h1{font-size:12px; letter-spacing:.18em; text-transform:uppercase;
-    color:var(--acc); font-weight:600;}
-  h1 span{color:var(--dim); font-weight:400}
-  .grp{display:flex; flex-direction:column; gap:9px;
-    padding-bottom:16px; border-bottom:1px solid var(--line);}
-  .grp:last-child{border:0}
-  .lbl{font-size:10px; letter-spacing:.12em; text-transform:uppercase; color:var(--dim);}
-  .row{display:flex; align-items:center; gap:8px; justify-content:space-between}
-  input[type=range]{flex:1; accent-color:var(--acc); height:3px; cursor:pointer}
-  .val{width:54px; text-align:right; color:var(--acc); font-size:11px;
-    font-variant-numeric:tabular-nums}
-  button{font:inherit; font-size:11px; letter-spacing:.05em;
-    background:#1d2025; color:var(--txt); border:1px solid var(--line);
-    padding:8px 10px; border-radius:3px; cursor:pointer; transition:.12s; text-align:left;}
-  button:hover{border-color:#3a3f47; background:#23262c}
-  button.on{background:var(--acc); color:#111; border-color:var(--acc)}
-  button.go{background:var(--go); color:#0c1a0f; border-color:var(--go)}
-  button.stop{background:var(--warn); color:#1a0e08; border-color:var(--warn)}
-  button:disabled{opacity:.35; cursor:not-allowed}
-  .btns{display:grid; grid-template-columns:1fr 1fr; gap:6px}
-  .btns .wide{grid-column:1/3}
-  .tool{display:flex; gap:6px}
-  .tool button{flex:1; text-align:center}
-  .hint{font-size:10px; color:var(--dim); line-height:1.5}
-  .file{position:relative; overflow:hidden}
-  .file input{position:absolute; inset:0; opacity:0; cursor:pointer}
-  .stat{display:flex; justify-content:space-between; font-size:10px; color:var(--dim)}
-  .stat b{color:var(--acc); font-weight:400; font-variant-numeric:tabular-nums}
-  .dial{display:flex; align-items:center; gap:10px}
-  #dialPad{width:54px;height:54px;border:1px solid var(--line);border-radius:50%;
-    position:relative;cursor:pointer;flex:none;background:#1a1d22}
-  #dialDot{position:absolute;width:6px;height:6px;border-radius:50%;background:var(--warn);
-    top:50%;left:50%;transform:translate(-50%,-50%)}
-  .bar{height:4px;background:#1d2025;border:1px solid var(--line);border-radius:2px;overflow:hidden}
-  .bar>i{display:block;height:100%;background:var(--go);width:0%}
-  main{flex:1; height:100vh; display:flex; align-items:center; justify-content:center;
-    overflow:auto; padding:24px;
-    background:
-      linear-gradient(45deg,#101113 25%,transparent 25%),
-      linear-gradient(-45deg,#101113 25%,transparent 25%),
-      linear-gradient(45deg,transparent 75%,#101113 75%),
-      linear-gradient(-45deg,transparent 75%,#101113 75%);
-    background-size:22px 22px; background-position:0 0,0 11px,11px -11px,-11px 0;}
-  #wrap{position:relative; line-height:0; box-shadow:0 18px 60px rgba(0,0,0,.6)}
+    -webkit-user-select:none; user-select:none; -webkit-tap-highlight-color:transparent;}
+  button{font:inherit; color:var(--txt); background:none; border:none; cursor:pointer}
+  button:focus-visible{outline:2px solid var(--terra); outline-offset:2px}
+  .ico{display:inline-flex; align-items:center; justify-content:center}
+  .ico svg{width:20px; height:20px; fill:none; stroke:currentColor;
+    stroke-width:1.7; stroke-linecap:round; stroke-linejoin:round}
+
+  /* ---- artboard stage ---- */
+  #stage{position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
+    overflow:auto; padding:78px 28px 140px;}
+  #wrap{position:relative; line-height:0; outline:1px solid var(--line);
+    box-shadow:0 30px 90px rgba(0,0,0,.75);
+    background:repeating-conic-gradient(#101113 0% 25%, transparent 0% 50%) 0 0/22px 22px;}
   #wrap canvas,#wrap img{position:absolute; top:0; left:0}
   #ref{position:relative}
-  #ui{cursor:crosshair; touch-action:none; -webkit-user-select:none; user-select:none}
-  .empty{color:var(--dim); text-align:center; max-width:280px; line-height:1.7}
-  .empty b{color:var(--acc); display:block; margin-bottom:8px; letter-spacing:.1em}
+  #ui{cursor:crosshair; touch-action:none}
+  .empty{font:inherit; color:var(--dim); text-align:center; max-width:320px;
+    line-height:1.9; padding:64px 34px}
+  .empty b{display:block; color:var(--bone); letter-spacing:.24em; margin-bottom:12px; font-size:11px}
+  .empty .k{color:var(--txt)}
+
+  /* ---- floating clusters ---- */
+  .hud{position:fixed; display:flex; align-items:center; gap:8px; z-index:30}
+  .hud.tl{top:16px; left:16px; gap:16px}
+  .hud.tr{top:16px; right:16px}
+  .brand{display:flex; align-items:center; gap:10px; color:var(--bone);
+    letter-spacing:.22em; font-size:12px; text-transform:uppercase}
+  .brand .mk{width:20px; height:20px; color:var(--terra)}
+  .brand .sub{color:var(--dim); letter-spacing:.14em}
+  .cluster{display:flex; align-items:center; gap:2px; background:var(--surface);
+    border:1px solid var(--line); border-radius:12px; padding:5px}
+
+  /* ---- icon buttons ---- */
+  .btn{position:relative; width:42px; height:42px; border-radius:9px; color:var(--txt);
+    display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px; transition:.12s}
+  .btn:hover{background:var(--surface2); color:var(--bone)}
+  .btn:active{transform:translateY(1px)}
+  .btn:disabled{opacity:.3; cursor:not-allowed}
+  .btn .cap{font-size:8px; letter-spacing:.1em; text-transform:uppercase; color:var(--dim)}
+  .btn:hover .cap{color:var(--bone)}
+  .file{position:relative; overflow:hidden}
+  .file input{position:absolute; inset:0; opacity:0; cursor:pointer}
+
+  /* ---- dock ---- */
+  .dock{position:fixed; left:50%; bottom:18px; transform:translateX(-50%); z-index:40;
+    display:flex; align-items:center; gap:10px; background:var(--surface);
+    border:1px solid var(--line); border-radius:16px; padding:10px;
+    box-shadow:0 20px 55px rgba(0,0,0,.6)}
+  .seg{display:flex; gap:4px; padding:4px; background:var(--void); border-radius:11px}
+  .tool-btn{width:52px; height:52px; border-radius:8px; color:var(--txt); display:flex;
+    flex-direction:column; align-items:center; justify-content:center; gap:4px; transition:.12s}
+  .tool-btn .ico svg{width:22px; height:22px}
+  .tool-btn span{font-size:8px; letter-spacing:.12em; text-transform:uppercase; color:var(--dim)}
+  .tool-btn:hover{background:var(--surface2); color:var(--bone)}
+  .tool-btn.on{background:var(--bone); color:#111}
+  .tool-btn.on span{color:#111}
+  .divider{width:1px; height:36px; background:var(--line)}
+  .brush-ctl{display:flex; align-items:center; gap:9px; padding:0 4px; transition:.15s}
+  .brush-ctl.off{opacity:.3; pointer-events:none}
+  .brush-ctl .ico{color:var(--dim)}
+  .brush-ctl .val{font-size:10px; color:var(--bone); width:26px; font-variant-numeric:tabular-nums}
+  .run{position:relative; display:flex; align-items:center; gap:9px; height:52px;
+    padding:0 22px 0 19px; border-radius:11px; background:var(--terra); color:#1a0e08;
+    overflow:hidden; font-size:12px; letter-spacing:.1em; text-transform:uppercase}
+  .run:hover{filter:brightness(1.06)}
+  .run:disabled{opacity:.4; filter:none}
+  .run svg{width:18px; height:18px; fill:currentColor; stroke:none}
+  .run.running{background:var(--surface2); color:var(--bone)}
+  .i-stop{display:none}
+  .run.running .i-run{display:none} .run.running .i-stop{display:inline-flex}
+  #prog{position:absolute; left:0; bottom:0; height:3px; background:rgba(26,14,8,.5); width:0%}
+  .run.running #prog{background:var(--bone); opacity:.85}
+  .status{font-size:10px; color:var(--dim); letter-spacing:.04em; min-width:56px; text-align:center}
+
+  /* ---- sliders ---- */
+  input[type=range]{-webkit-appearance:none; appearance:none; height:3px;
+    background:var(--line); border-radius:2px; cursor:pointer}
+  input[type=range]::-webkit-slider-thumb{-webkit-appearance:none; width:13px; height:13px;
+    border-radius:50%; background:var(--bone); border:0}
+  input[type=range]::-moz-range-thumb{width:13px; height:13px; border-radius:50%; background:var(--bone); border:0}
+  .brush-ctl input[type=range]{width:96px}
+
+  /* ---- parameter drawer ---- */
+  .drawer{position:fixed; left:50%; bottom:88px; transform:translateX(-50%) translateY(14px);
+    z-index:38; width:min(700px,calc(100vw - 32px)); background:var(--surface);
+    border:1px solid var(--line); border-radius:14px; padding:18px 22px;
+    box-shadow:0 20px 55px rgba(0,0,0,.6); opacity:0; visibility:hidden; transition:.18s;
+    display:grid; grid-template-columns:1fr 1fr 1fr; gap:22px 26px}
+  .drawer.open{opacity:1; visibility:visible; transform:translateX(-50%) translateY(0)}
+  .col{display:flex; flex-direction:column; gap:13px}
+  .col h2{font-size:9.5px; letter-spacing:.22em; text-transform:uppercase; color:var(--terra); font-weight:600}
+  .ctl{display:flex; flex-direction:column; gap:6px}
+  .ctl .top{display:flex; justify-content:space-between; align-items:baseline}
+  .ctl .nm{font-size:10px; letter-spacing:.1em; text-transform:uppercase; color:var(--dim)}
+  .ctl .val{font-size:11px; color:var(--bone); font-variant-numeric:tabular-nums}
+  .ctl input[type=range]{width:100%}
+  .dial{display:flex; align-items:center; gap:13px}
+  #dialPad{width:50px; height:50px; border:1px solid var(--line); border-radius:50%;
+    position:relative; cursor:pointer; flex:none; background:var(--void)}
+  #dialDot{position:absolute; width:6px; height:6px; border-radius:50%; background:var(--terra);
+    top:50%; left:50%; transform:translate(-50%,-50%)}
+  #curvePad{width:132px; height:132px; border:1px solid var(--line); border-radius:8px;
+    background:var(--void); touch-action:none; cursor:crosshair; align-self:flex-start}
+  #scrim{position:absolute; top:0; left:0; width:100%; height:100%; background:#000;
+    opacity:0; pointer-events:none}
+  .readout{grid-column:1/-1; display:flex; flex-wrap:wrap; gap:22px;
+    border-top:1px solid var(--line); padding-top:13px}
+  .readout div{font-size:10px; color:var(--dim); letter-spacing:.06em}
+  .readout b{color:var(--bone); font-weight:400; font-variant-numeric:tabular-nums}
+  .readout .seedclr{margin-left:auto}
+  .txtbtn{font-size:9.5px; letter-spacing:.12em; text-transform:uppercase; color:var(--dim);
+    border:1px solid var(--line); border-radius:7px; padding:6px 10px}
+  .txtbtn:hover{color:var(--bone); border-color:#3a3f47; background:var(--surface2)}
+
+  @media (max-width:720px){
+    .drawer{grid-template-columns:1fr 1fr}
+    .col.grain{grid-column:1/-1}
+    .brand .sub{display:none}
+  }
+  @media (max-width:540px){
+    .brand span:not(.sub){display:none}
+    .brush-ctl input[type=range]{width:60px}
+    .dock{gap:6px; padding:8px}
+  }
 </style>
 </head>
 <body>
-<aside>
-  <h1>DLA <span>/ ridge heightmap</span></h1>
 
-  <div class="grp">
-    <div class="lbl">Reference</div>
-    <button class="file wide">Load image…<input type="file" id="img" accept="image/*"></button>
-    <div class="hint">Transparent output canvas built at the image's exact pixel size, overlaid for drawing and export.</div>
+<!-- top-left: identity + file I/O -->
+<div class="hud tl">
+  <div class="brand">
+    <span class="mk ico"><svg viewBox="0 0 24 24"><path d="M3 19 9 8l3.5 5.5L15 10l6 9z"/></svg></span>
+  </div>
+  <div class="cluster">
+    <button class="btn file" title="Load reference image">
+      <span class="ico"><svg viewBox="0 0 24 24"><path d="M12 15V4"/><path d="M8 8l4-4 4 4"/><path d="M4 16v3a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-3"/></svg></span>
+      <span class="cap">Load</span>
+      <input type="file" id="img" accept="image/*">
+    </button>
+    <button class="btn" id="export" title="Export heightmap as PNG (black background)">
+      <span class="ico"><svg viewBox="0 0 24 24"><path d="M12 4v11"/><path d="M8 11l4 4 4-4"/><path d="M4 16v3a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-3"/></svg></span>
+      <span class="cap">Export</span>
+    </button>
+  </div>
+  <div class="cluster">
+    <button class="btn" id="undoBtn" title="Undo (Ctrl/Cmd+Z)" disabled>
+      <span class="ico"><svg viewBox="0 0 24 24"><path d="M8 7 3 12l5 5"/><path d="M3 12h10a6 6 0 0 1 6 6v1"/></svg></span>
+      <span class="cap">Undo</span>
+    </button>
+    <button class="btn" id="redoBtn" title="Redo (Ctrl/Cmd+Y)" disabled>
+      <span class="ico"><svg viewBox="0 0 24 24"><path d="M16 7l5 5-5 5"/><path d="M21 12H11a6 6 0 0 0-6 6v1"/></svg></span>
+      <span class="cap">Redo</span>
+    </button>
+  </div>
+</div>
+
+<!-- top-right: layer / terrain actions -->
+<div class="hud tr">
+  <div class="cluster">
+    <button class="btn" id="bakeBtn" title="Bake the current mountain and start a new mask">
+      <span class="ico"><svg viewBox="0 0 24 24"><path d="M12 3 4 7l8 4 8-4z"/><path d="M4 12l8 4 8-4"/><path d="M4 16.5l8 4 8-4"/></svg></span>
+      <span class="cap">Bake</span>
+    </button>
+    <button class="btn" id="reset" title="Reset active growth back to its seeds">
+      <span class="ico"><svg viewBox="0 0 24 24"><path d="M4 4v5h5"/><path d="M4.5 9a8 8 0 1 1-1.2 5"/></svg></span>
+      <span class="cap">Reset</span>
+    </button>
+    <button class="btn" id="clrAll" title="Clear everything, including baked terrain">
+      <span class="ico"><svg viewBox="0 0 24 24"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"/></svg></span>
+      <span class="cap">Clear</span>
+    </button>
+  </div>
+</div>
+
+<!-- artboard -->
+<div id="stage">
+  <div id="wrap"><div class="empty"><b>No reference loaded</b>
+    Load an image to start. <span class="k">Mask</span> a region, drop a <span class="k">Seed</span> where ridges begin, then Run.</div></div>
+</div>
+
+<!-- parameter drawer -->
+<div class="drawer" id="drawer">
+  <div class="col">
+    <h2>Simulation</h2>
+    <div class="ctl"><div class="top"><span class="nm">Density</span><span class="val" id="densityV">25%</span></div>
+      <input type="range" id="density" min="1" max="100" value="25"></div>
+    <div class="ctl"><div class="top"><span class="nm">Stick</span><span class="val" id="stickV">1.00</span></div>
+      <input type="range" id="stick" min="5" max="100" value="100"></div>
+    <div class="ctl"><div class="top"><span class="nm">Speed</span><span class="val" id="speedV">600</span></div>
+      <input type="range" id="speed" min="50" max="3000" step="50" value="600"></div>
+    <div class="ctl"><div class="top"><span class="nm">Repel</span><span class="val" id="repelV">3</span></div>
+      <input type="range" id="repel" min="0" max="20" value="3"></div>
   </div>
 
-  <div class="grp">
-    <div class="lbl">Tool</div>
-    <div class="tool">
-      <button id="tMask" class="on">Mask</button>
-      <button id="tErase">Erase</button>
-      <button id="tSeed">Seed</button>
-    </div>
-    <div class="row"><span class="lbl">Brush</span>
-      <input type="range" id="brush" min="4" max="160" value="40">
-      <span class="val" id="brushV">40</span></div>
-    <div class="hint">Mask = growth region. Seeds (1px) start the brightest ridges. "Bake + new mask" locks the current mountain — the next one treats it as rock: it won't grow through it or stick to it.</div>
-    <div class="btns">
-      <button id="bakeBtn">Bake + new mask</button>
-      <button id="clrSeed">Clear seeds</button>
-      <button id="clrAll" class="wide">Clear all (incl. baked)</button>
-    </div>
-  </div>
-
-  <div class="grp">
-    <div class="lbl">Simulation</div>
-    <div class="row"><span class="lbl">Particles</span>
-      <input type="range" id="particles" min="500" max="20000" step="500" value="8000">
-      <span class="val" id="particlesV">8000</span></div>
-    <div class="row"><span class="lbl">Stick</span>
-      <input type="range" id="stick" min="5" max="100" value="100">
-      <span class="val" id="stickV">1.00</span></div>
-    <div class="row"><span class="lbl">Speed</span>
-      <input type="range" id="speed" min="50" max="3000" step="50" value="600">
-      <span class="val" id="speedV">600</span></div>
-    <div class="row"><span class="lbl">Repel</span>
-      <input type="range" id="repel" min="0" max="20" value="3">
-      <span class="val" id="repelV">3</span></div>
-    <div class="hint">Particles = target deposits before it stops (scale to mask size). Stick 1.00 = branching; lower fills denser. Speed = particles per frame. Repel = gap (px) the next mountain keeps from baked terrain.</div>
-  </div>
-
-  <div class="grp">
-    <div class="lbl">Directional grain (ridges)</div>
+  <div class="col grain">
+    <h2>Directional grain</h2>
     <div class="dial">
       <div id="dialPad"><div id="dialDot"></div></div>
-      <div style="flex:1;display:flex;flex-direction:column;gap:8px">
-        <div class="row"><span class="lbl">Drift</span>
-          <input type="range" id="drift" min="0" max="100" value="0">
-          <span class="val" id="driftV">0.00</span></div>
-        <div class="hint">0 = isotropic. Higher biases walkers along the dial direction for elongated ridgelines.</div>
+      <div class="ctl" style="flex:1">
+        <div class="top"><span class="nm">Drift</span><span class="val" id="driftV">0.00</span></div>
+        <input type="range" id="drift" min="0" max="100" value="0">
       </div>
     </div>
+    <h2 style="margin-top:4px">Reference</h2>
+    <div class="ctl"><div class="top"><span class="nm">Dim</span><span class="val" id="dimV">0%</span></div>
+      <input type="range" id="dim" min="0" max="100" value="0"></div>
   </div>
 
-  <div class="grp">
-    <div class="lbl">Rendering (height)</div>
-    <div class="row"><span class="lbl">Gamma</span>
-      <input type="range" id="gamma" min="10" max="40" value="20">
-      <span class="val" id="gammaV">2.0</span></div>
-    <div class="row"><span class="lbl">Floor</span>
-      <input type="range" id="floor" min="0" max="255" value="20">
-      <span class="val" id="floorV">20</span></div>
-    <div class="hint">Brightness = stick order: seeds brightest, later growth fades to Floor. Gamma shapes the falloff. Re-renders fully on stop.</div>
+  <div class="col">
+    <h2>Height</h2>
+    <div class="ctl"><span class="nm" style="margin-bottom:3px">Falloff curve</span>
+      <canvas id="curvePad" width="132" height="132"></canvas></div>
+    <div class="ctl"><div class="top"><span class="nm">Floor</span><span class="val" id="floorV">20</span></div>
+      <input type="range" id="floor" min="0" max="255" value="20"></div>
+    <div class="ctl"><div class="top"><span class="nm">Max height</span><span class="val" id="maxhV">100%</span></div>
+      <input type="range" id="maxh" min="0" max="100" value="100"></div>
   </div>
 
-  <div class="grp">
-    <div class="btns">
-      <button id="run" class="wide go" disabled>▶ Run</button>
-      <button id="reset">Reset growth</button>
-      <button id="export">Export PNG</button>
-    </div>
-    <div class="bar" style="margin-top:4px"><i id="prog"></i></div>
-    <div class="stat"><span>seeds</span><b id="sSeeds">0</b></div>
-    <div class="stat"><span>stuck</span><b id="sStuck">0</b></div>
-    <div class="stat"><span>baked</span><b id="sBaked">0</b></div>
-    <div class="stat"><span id="sMsgL">status</span><b id="sMsg">—</b></div>
+  <div class="readout">
+    <div>seeds <b id="sSeeds">0</b></div>
+    <div>stuck <b id="sStuck">0</b></div>
+    <div>target ≈ <b id="estParticles">0</b></div>
+    <div>baked <b id="sBaked">0</b></div>
+    <button class="txtbtn seedclr" id="clrSeed">Clear seeds</button>
   </div>
-</aside>
+</div>
 
-<main>
-  <div id="wrap"><div class="empty"><b>NO REFERENCE</b>Load an image. Mask a region, seed where ridges begin, set drift, run.</div></div>
-</main>
+<!-- instrument dock -->
+<div class="dock">
+  <div class="seg">
+    <button class="tool-btn on" id="tMask" title="Mask — paint the growth region">
+      <span class="ico"><svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="1.5" stroke-dasharray="3 3"/></svg></span>
+      <span>Mask</span>
+    </button>
+    <button class="tool-btn" id="tLasso" title="Lasso — drag a loop to add a region (Alt-drag subtracts)">
+      <span class="ico"><svg viewBox="0 0 24 24"><ellipse cx="12" cy="9" rx="8" ry="5"/><path d="M6.7 13.4c.2 1.8 1.1 2.9 1.1 4.1a1.6 1.6 0 0 1-3.2 0"/></svg></span>
+      <span>Lasso</span>
+    </button>
+    <button class="tool-btn" id="tErase" title="Erase the mask">
+      <span class="ico"><svg viewBox="0 0 24 24"><path d="M4 15 13 6l5 5-7 7H8z"/><path d="M9.5 20H20"/></svg></span>
+      <span>Erase</span>
+    </button>
+    <button class="tool-btn" id="tSeed" title="Seed — place a 1px ridge origin">
+      <span class="ico"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="2.4"/><path d="M12 5.5V2M12 22v-3.5M5.5 12H2M22 12h-3.5M7.3 7.3 5.5 5.5M18.5 5.5 16.7 7.3M7.3 16.7 5.5 18.5M16.7 16.7 18.5 18.5"/></svg></span>
+      <span>Seed</span>
+    </button>
+  </div>
+
+  <div class="brush-ctl" id="brushCtl">
+    <span class="ico"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="6"/></svg></span>
+    <input type="range" id="brush" min="4" max="160" value="40" title="Brush size">
+    <span class="val" id="brushV">40</span>
+  </div>
+
+  <div class="divider"></div>
+
+  <span class="status" id="sMsg">—</span>
+
+  <button class="run" id="run" disabled aria-label="Run simulation">
+    <span class="ico i-run"><svg viewBox="0 0 24 24"><path d="M7 5v14l12-7z"/></svg></span>
+    <span class="ico i-stop"><svg viewBox="0 0 24 24"><rect x="6" y="6" width="12" height="12" rx="1.5"/></svg></span>
+    <span id="runLabel">Run</span>
+    <i id="prog"></i>
+  </button>
+
+  <button class="btn" id="paramToggle" title="Parameters">
+    <span class="ico"><svg viewBox="0 0 24 24"><path d="M4 8h8M16 8h4M4 16h4M12 16h8"/><circle cx="14" cy="8" r="2"/><circle cx="9" cy="16" r="2"/></svg></span>
+  </button>
+</div>
 
 <script>
 const $=id=>document.getElementById(id);
 const wrap=$('wrap');
-let W=0,H=0,N=0, imgEl=null, out=null, octx=null, ui=null, uctx=null;
+let W=0,H=0,N=0, imgEl=null, out=null, octx=null, ui=null, uctx=null, scrim=null;
 
 let mask=null;        // Uint8: 1 = allowed
 let cluster=null;     // Int32: 0 empty, 1 = seed, >=2 = stick order (active mountain)
@@ -177,8 +305,13 @@ let maxOrder=1, stuck=0, bakedCount=0;
 let isNoGlue=null, spawnPix=null, repel=null, running=false, raf=0, misses=0, frame=0, renderEvery=1, runStart=0;
 
 let tool='mask', painting=false;
-const cfg={brush:40, target:8000, stick:1, speed:600,
-           drift:0, biasAng:270, gamma:2, floor:20, repel:3};
+let lassoPts=null, lassoSub=false;
+let undoStack=[], redoStack=[];
+const cfg={brush:40, target:8000, density:0.25, stick:1, speed:600,
+           drift:0, biasAng:270, floor:20, repel:3, activeScale:1, dim:0};
+let curve={c1:{x:.3,y:.1}, c2:{x:.7,y:.45}};
+const curveLUT=new Float32Array(256);
+let areaCount=0;
 
 const DIRS=[[-1,-1],[0,-1],[1,-1],[-1,0],[1,0],[-1,1],[0,1],[1,1]];
 const DV=[[1,0],[1,-1],[0,-1],[-1,-1],[-1,0],[-1,1],[0,1],[1,1]];     // movement
@@ -192,6 +325,7 @@ $('img').onchange=e=>{const f=e.target.files[0]; if(!f)return;
 function setup(im){
   wrap.innerHTML=''; wrap.style.width=W+'px'; wrap.style.height=H+'px';
   imgEl=im; imgEl.id='ref'; imgEl.width=W; imgEl.height=H; wrap.appendChild(imgEl);
+  scrim=document.createElement('div'); scrim.id='scrim'; scrim.style.opacity=cfg.dim; wrap.appendChild(scrim);
   out=document.createElement('canvas'); out.width=W; out.height=H; wrap.appendChild(out);
   octx=out.getContext('2d',{willReadFrequently:true});
   ui=document.createElement('canvas'); ui.id='ui'; ui.width=W; ui.height=H; wrap.appendChild(ui);
@@ -199,20 +333,22 @@ function setup(im){
   mask=new Uint8Array(N); cluster=new Int32Array(N);
   baked=new Uint8Array(N); bakedBright=new Uint8Array(N); seeds=[];
   maxOrder=1; stuck=0; bakedCount=0; renderEvery = N>1500000?3:1;
-  $('run').disabled=false; render(); drawUI(); status('draw a mask');
+  $('run').disabled=false; render(); drawUI(); refreshArea();
+  undoStack=[]; redoStack=[]; updateHistUI(); status('draw a mask');
 }
 
 /* ---------- order-brightness render (transparent where empty) ---------- */
 function render(){
   if(!octx)return;
   const img=octx.createImageData(W,H), d=img.data;
-  const g=cfg.gamma, fl=cfg.floor, sm=Math.max(1,maxOrder);
+  const fl=cfg.floor, sm=Math.max(1,maxOrder), sc=cfg.activeScale;
   for(let i=0;i<N;i++){
     if(baked[i]){ const p=i*4; const b=bakedBright[i]; d[p]=d[p+1]=d[p+2]=b; d[p+3]=255; continue; }
     const v=cluster[i]; if(v<=0)continue;          // empty -> transparent
     let b;
     if(v===1) b=255;                               // seed
-    else { const nrm=1-(v/sm); b=fl+(255-fl)*Math.pow(nrm<0?0:nrm,g); b=b<0?0:b>255?255:b; }
+    else { let nrm=1-(v/sm); if(nrm<0)nrm=0; b=fl+(255-fl)*curveLUT[(nrm*255)|0]; }
+    b*=sc; if(b<0)b=0; else if(b>255)b=255;
     const p=i*4; d[p]=d[p+1]=d[p+2]=b; d[p+3]=255;
   }
   octx.putImageData(img,0,0);
@@ -220,7 +356,9 @@ function render(){
 
 /* ---------- painting ---------- */
 let uiDirty=false, outDirty=false, flushQueued=false;
-function flushNow(){ if(outDirty){render();outDirty=false;} if(uiDirty){drawUI();uiDirty=false;} flushQueued=false; }
+function flushNow(){ if(outDirty){render();outDirty=false;} if(uiDirty){drawUI();uiDirty=false;}
+  if(painting&&tool==='lasso'&&lassoPts&&lassoPts.length) drawLassoOverlay();
+  flushQueued=false; }
 function queueFlush(){ if(!flushQueued){flushQueued=true; requestAnimationFrame(flushNow);} }
 
 function bindPaint(){
@@ -231,10 +369,43 @@ function bindPaint(){
   // expand to coalesced samples (Pencil fires faster than pointermove)
   const stroke=e=>{ const evs=(e.getCoalescedEvents&&e.pointerType==='pen')?e.getCoalescedEvents():[e];
     for(const ev of evs){ const m=map(ev); paint(m.x,m.y,m.p); } };
-  ui.onpointerdown=e=>{ if(running)return; painting=true; ui.setPointerCapture(e.pointerId); stroke(e); };
-  ui.onpointermove=e=>{ if(painting)stroke(e); };
-  ui.onpointerup=()=>{ painting=false; flushNow(); };
-  ui.onpointercancel=()=>{ painting=false; flushNow(); };
+  ui.onpointerdown=e=>{ if(running)return; pushUndo(); painting=true; ui.setPointerCapture(e.pointerId);
+    if(tool==='lasso'){ lassoSub=e.altKey; const m=map(e); lassoPts=[[m.x,m.y]]; uiDirty=true; queueFlush(); }
+    else stroke(e); };
+  ui.onpointermove=e=>{ if(!painting)return;
+    if(tool==='lasso'){ const m=map(e), L=lassoPts[lassoPts.length-1];
+      if(!L||L[0]!==m.x||L[1]!==m.y){ lassoPts.push([m.x,m.y]); uiDirty=true; queueFlush(); } }
+    else stroke(e); };
+  ui.onpointerup=()=>{ painting=false;
+    if(tool==='lasso'){ commitLasso(); lassoPts=null; }
+    flushNow(); refreshArea(); };
+  ui.onpointercancel=()=>{ painting=false; lassoPts=null; flushNow(); refreshArea(); };
+}
+// even-odd scanline fill of a freehand loop into the mask
+function fillPolygon(pts,val){
+  let minY=H,maxY=0; for(const p of pts){ if(p[1]<minY)minY=p[1]; if(p[1]>maxY)maxY=p[1]; }
+  minY=Math.max(0,minY|0); maxY=Math.min(H-1,maxY|0); const n=pts.length;
+  for(let y=minY;y<=maxY;y++){
+    const xs=[];
+    for(let i=0,j=n-1;i<n;j=i++){ const yi=pts[i][1],yj=pts[j][1];
+      if((yi<=y&&yj>y)||(yj<=y&&yi>y)){ const t=(y-yi)/(yj-yi); xs.push(pts[i][0]+t*(pts[j][0]-pts[i][0])); } }
+    xs.sort((a,b)=>a-b);
+    for(let k=0;k+1<xs.length;k+=2){
+      const x0=Math.max(0,Math.ceil(xs[k])), x1=Math.min(W-1,Math.floor(xs[k+1]));
+      for(let x=x0;x<=x1;x++){ const idx=y*W+x; mask[idx]=val; if(!val&&cluster[idx]>0)cluster[idx]=0; } }
+  }
+}
+function commitLasso(){ if(!lassoPts||lassoPts.length<3)return;
+  fillPolygon(lassoPts, lassoSub?0:1); if(lassoSub)outDirty=true; uiDirty=true; }
+function drawLassoOverlay(){ const pts=lassoPts; if(!pts||!pts.length)return;
+  const sc=(ui.getBoundingClientRect().width/W)||1;
+  uctx.save(); uctx.lineJoin='round'; uctx.lineWidth=Math.max(1,1.4/sc);
+  uctx.beginPath(); uctx.moveTo(pts[0][0]+.5,pts[0][1]+.5);
+  for(let i=1;i<pts.length;i++) uctx.lineTo(pts[i][0]+.5,pts[i][1]+.5);
+  uctx.closePath();
+  uctx.fillStyle=lassoSub?'rgba(217,139,95,.12)':'rgba(232,227,211,.12)'; uctx.fill();
+  uctx.strokeStyle=lassoSub?'rgba(217,139,95,.95)':'rgba(232,227,211,.95)'; uctx.stroke();
+  uctx.restore();
 }
 function paint(x,y,pr){
   if(pr===undefined)pr=1;
@@ -340,13 +511,16 @@ function loop(){
 }
 function startSim(){
   if(!seeds.length){ status('add a seed'); return; }
+  refreshArea();
+  if(!areaCount){ status('draw a mask'); return; }
+  cfg.target=Math.max(1,Math.round(cfg.density*areaCount));
   precompute(); misses=0; frame=0; runStart=stuck; running=true;
-  $('run').textContent='❚❚ Stop'; $('run').classList.remove('go'); $('run').classList.add('stop');
+  $('run').classList.add('running'); $('runLabel').textContent='Stop';
   status('running'); loop();
 }
 function stop(reason){
   running=false; cancelAnimationFrame(raf); render(); updateStats();
-  $('run').textContent='▶ Run'; $('run').classList.remove('stop'); $('run').classList.add('go');
+  $('run').classList.remove('running'); $('runLabel').textContent='Run';
   if(reason)status(reason);
 }
 
@@ -356,40 +530,65 @@ function resetGrowth(){
   maxOrder=1; stuck=seeds.length; render(); updateStats(); status('reset');
 }
 function bake(){
-  const sm=Math.max(1,maxOrder), g=cfg.gamma, fl=cfg.floor; let any=false;
+  const sm=Math.max(1,maxOrder), fl=cfg.floor, sc=cfg.activeScale; let any=false;
   for(let i=0;i<N;i++){ const v=cluster[i]; if(v<=0)continue; any=true;
     let b; if(v===1)b=255;
-    else{ const nrm=1-(v/sm); b=fl+(255-fl)*Math.pow(nrm<0?0:nrm,g); b=b<0?0:b>255?255:b; }
+    else{ let nrm=1-(v/sm); if(nrm<0)nrm=0; b=fl+(255-fl)*curveLUT[(nrm*255)|0]; }
+    b*=sc; if(b<0)b=0; else if(b>255)b=255; b=b|0;
     baked[i]=1; bakedBright[i]=b; cluster[i]=0; bakedCount++;
   }
   seeds=[]; maxOrder=1; stuck=0; return any;
 }
 function bakeAndClearMask(){ if(running)stop();
   const did=bake(); mask.fill(0);
-  render(); drawUI(); updateStats(); status(did?'baked — draw next mask':'mask cleared'); }
+  cfg.activeScale=1; $('maxh').value=100; $('maxhV').textContent='100%';
+  render(); drawUI(); updateStats(); refreshArea(); status(did?'baked — draw next mask':'mask cleared'); }
 function clearAll(){ if(running)stop();
   mask.fill(0); cluster.fill(0); baked.fill(0); bakedBright.fill(0);
   seeds=[]; maxOrder=1; stuck=0; bakedCount=0;
-  render(); drawUI(); updateStats(); status('cleared all'); }
+  render(); drawUI(); updateStats(); refreshArea(); status('cleared all'); }
 function clearSeeds(){ cluster.fill(0); seeds=[]; maxOrder=1; stuck=0;
-  render(); drawUI(); updateStats(); status('seeds cleared'); }
+  render(); drawUI(); updateStats(); refreshArea(); status('seeds cleared'); }
 
 /* ---------- controls ---------- */
 function status(t){ $('sMsg').textContent=t; }
+function refreshArea(){ if(!mask){areaCount=0;updateAreaUI();return;}
+  let c=0; for(let i=0;i<N;i++) if(mask[i]&&!baked[i]) c++;
+  areaCount=c; updateAreaUI(); }
+function updateAreaUI(){ $('estParticles').textContent=Math.round(cfg.density*areaCount).toLocaleString(); }
 function updateStats(){ $('sSeeds').textContent=seeds.length;
   $('sStuck').textContent=stuck.toLocaleString();
   $('sBaked').textContent=bakedCount.toLocaleString();
   $('prog').style.width=Math.max(0,Math.min(100,(stuck-runStart)/cfg.target*100))+'%'; }
+/* ---------- undo / redo (full-state snapshots at action boundaries) ---------- */
+function snapshot(){ return {mask:mask.slice(), cluster:cluster.slice(), baked:baked.slice(),
+  bakedBright:bakedBright.slice(), seeds:seeds.map(s=>({x:s.x,y:s.y})),
+  maxOrder, stuck, bakedCount}; }
+function restore(s){ mask=s.mask.slice(); cluster=s.cluster.slice(); baked=s.baked.slice();
+  bakedBright=s.bakedBright.slice(); seeds=s.seeds.map(p=>({x:p.x,y:p.y}));
+  maxOrder=s.maxOrder; stuck=s.stuck; bakedCount=s.bakedCount;
+  render(); drawUI(); updateStats(); refreshArea(); }
+function pushUndo(){ if(!mask)return; undoStack.push(snapshot());
+  const cap=N>1500000?8:25; while(undoStack.length>cap)undoStack.shift();
+  redoStack.length=0; updateHistUI(); }
+function undo(){ if(!undoStack.length)return; if(running)stop();
+  redoStack.push(snapshot()); restore(undoStack.pop()); updateHistUI(); status('undo'); }
+function redo(){ if(!redoStack.length)return; if(running)stop();
+  undoStack.push(snapshot()); restore(redoStack.pop()); updateHistUI(); status('redo'); }
+function updateHistUI(){ const u=$('undoBtn'),r=$('redoBtn');
+  if(u)u.disabled=!undoStack.length; if(r)r.disabled=!redoStack.length; }
+
 function slider(id,vid,fn,fmt){ const s=$(id),v=$(vid);
   const u=()=>{fn(+s.value);v.textContent=fmt?fmt(+s.value):s.value;}; s.oninput=u; u(); }
 slider('brush','brushV',x=>cfg.brush=x);
-slider('particles','particlesV',x=>{cfg.target=x;updateStats();});
+slider('density','densityV',x=>{cfg.density=x/100;updateAreaUI();},x=>x+'%');
 slider('stick','stickV',x=>cfg.stick=x/100,x=>(x/100).toFixed(2));
 slider('speed','speedV',x=>cfg.speed=x);
 slider('repel','repelV',x=>cfg.repel=x);
 slider('drift','driftV',x=>cfg.drift=x/100,x=>(x/100).toFixed(2));
-slider('gamma','gammaV',x=>{cfg.gamma=x/10;if(!running)render();},x=>(x/10).toFixed(1));
 slider('floor','floorV',x=>{cfg.floor=x;if(!running)render();});
+slider('maxh','maxhV',x=>{cfg.activeScale=x/100;if(!running)render();},x=>x+'%');
+slider('dim','dimV',x=>{cfg.dim=x/100;if(scrim)scrim.style.opacity=cfg.dim;},x=>x+'%');
 
 // drift direction dial (screen-intuitive: drag down -> ridges flow down)
 const pad=$('dialPad'),dot=$('dialDot');
@@ -404,6 +603,55 @@ pad.onpointermove=e=>{if(dd)setDial(e);};
 pad.onpointerup=()=>dd=false;
 dot.style.left='50%';dot.style.top='88%';   // default down (biasAng 270)
 
+// falloff curve editor -> 256-entry LUT used by render/bake
+const cvp=$('curvePad'), cvx=cvp.getContext('2d'), CS=cvp.width;
+function bez(t,a,b,c,d){const u=1-t;return u*u*u*a+3*u*u*t*b+3*u*t*t*c+t*t*t*d;}
+function buildCurveLUT(){
+  const SX=new Float32Array(1025), SY=new Float32Array(1025);
+  for(let i=0;i<=1024;i++){const t=i/1024;
+    SX[i]=bez(t,0,curve.c1.x,curve.c2.x,1); SY[i]=bez(t,0,curve.c1.y,curve.c2.y,1);}
+  let j=0;
+  for(let i=0;i<256;i++){const x=i/255;
+    while(j<1024&&SX[j+1]<x)j++;
+    const x0=SX[j],x1=SX[j+1],den=(x1-x0)||1e-6,f=(x-x0)/den;
+    let y=SY[j]+(SY[j+1]-SY[j])*f; if(y<0)y=0;else if(y>1)y=1; curveLUT[i]=y;}
+}
+function drawCurve(){
+  cvx.clearRect(0,0,CS,CS);
+  cvx.strokeStyle='rgba(255,255,255,.05)'; cvx.lineWidth=1;
+  for(let i=1;i<4;i++){const p=CS*i/4; cvx.beginPath();cvx.moveTo(p,0);cvx.lineTo(p,CS);cvx.moveTo(0,p);cvx.lineTo(CS,p);cvx.stroke();}
+  cvx.strokeStyle='rgba(255,255,255,.12)'; cvx.beginPath();cvx.moveTo(0,CS);cvx.lineTo(CS,0);cvx.stroke();
+  const X=v=>v*CS, Y=v=>CS-v*CS;
+  cvx.strokeStyle='rgba(217,139,95,.45)';
+  cvx.beginPath();cvx.moveTo(X(0),Y(0));cvx.lineTo(X(curve.c1.x),Y(curve.c1.y));cvx.stroke();
+  cvx.beginPath();cvx.moveTo(X(1),Y(1));cvx.lineTo(X(curve.c2.x),Y(curve.c2.y));cvx.stroke();
+  cvx.strokeStyle='#e8e3d3'; cvx.lineWidth=2; cvx.beginPath();
+  for(let i=0;i<=72;i++){const t=i/72,x=bez(t,0,curve.c1.x,curve.c2.x,1),y=bez(t,0,curve.c1.y,curve.c2.y,1);
+    i?cvx.lineTo(X(x),Y(y)):cvx.moveTo(X(x),Y(y));}
+  cvx.stroke();
+  cvx.fillStyle='#d98b5f';
+  for(const h of [curve.c1,curve.c2]){cvx.beginPath();cvx.arc(X(h.x),Y(h.y),4.5,0,7);cvx.fill();}
+}
+let curveDrag=null;
+function moveCurve(e){const r=cvp.getBoundingClientRect();
+  let x=(e.clientX-r.left)/r.width, y=1-(e.clientY-r.top)/r.height;
+  x=x<0?0:x>1?1:x; y=y<0?0:y>1?1:y; curveDrag.x=x; curveDrag.y=y;
+  buildCurveLUT(); drawCurve(); if(!running)render();}
+cvp.onpointerdown=e=>{const r=cvp.getBoundingClientRect();
+  const x=(e.clientX-r.left)/r.width, y=1-(e.clientY-r.top)/r.height;
+  curveDrag=(Math.hypot(x-curve.c1.x,y-curve.c1.y)<Math.hypot(x-curve.c2.x,y-curve.c2.y))?curve.c1:curve.c2;
+  cvp.setPointerCapture(e.pointerId); moveCurve(e);};
+cvp.onpointermove=e=>{if(curveDrag)moveCurve(e);};
+cvp.onpointerup=()=>{curveDrag=null;};
+buildCurveLUT(); drawCurve();
+
+// undo/redo keyboard shortcuts
+window.addEventListener('keydown',e=>{
+  if(!(e.metaKey||e.ctrlKey))return; const k=e.key.toLowerCase();
+  if(k==='z'&&!e.shiftKey){ e.preventDefault(); undo(); }
+  else if((k==='z'&&e.shiftKey)||k==='y'){ e.preventDefault(); redo(); }
+});
+
 // warn before leaving if there's unsaved work (mask drawn, seeds, growth, or baked terrain)
 window.addEventListener('beforeunload',e=>{
   const hasWork = seeds.length || stuck>seeds.length || bakedCount>0 || (mask&&mask.some(v=>v));
@@ -412,17 +660,23 @@ window.addEventListener('beforeunload',e=>{
 
 function setTool(t){tool=t;
   $('tMask').classList.toggle('on',t==='mask');
+  $('tLasso').classList.toggle('on',t==='lasso');
   $('tErase').classList.toggle('on',t==='erase');
   $('tSeed').classList.toggle('on',t==='seed');
-  $('brush').disabled=(t==='seed'); $('brush').style.opacity=(t==='seed')?'.3':'1';}
+  const noBrush=(t==='seed'||t==='lasso');
+  $('brush').disabled=noBrush; $('brushCtl').classList.toggle('off',noBrush);}
 $('tMask').onclick=()=>setTool('mask');
+$('tLasso').onclick=()=>setTool('lasso');
 $('tErase').onclick=()=>setTool('erase');
 $('tSeed').onclick=()=>setTool('seed');
-$('bakeBtn').onclick=bakeAndClearMask;
-$('clrSeed').onclick=clearSeeds;
-$('clrAll').onclick=clearAll;
-$('reset').onclick=()=>{ if(running)stop(); resetGrowth(); };
-$('run').onclick=()=>{ running?stop('stopped'):startSim(); };
+$('paramToggle').onclick=()=>{ const d=$('drawer'); const open=d.classList.toggle('open');
+  $('paramToggle').classList.toggle('active',open); };
+$('bakeBtn').onclick=()=>{ pushUndo(); bakeAndClearMask(); };
+$('clrSeed').onclick=()=>{ pushUndo(); clearSeeds(); };
+$('clrAll').onclick=()=>{ pushUndo(); clearAll(); };
+$('reset').onclick=()=>{ if(running)stop(); pushUndo(); resetGrowth(); };
+$('run').onclick=()=>{ running?stop('stopped'):(pushUndo(),startSim()); };
+$('undoBtn').onclick=undo; $('redoBtn').onclick=redo;
 $('export').onclick=()=>{ if(!W)return; render();
   const tmp=document.createElement('canvas'); tmp.width=W; tmp.height=H;
   const t=tmp.getContext('2d'); t.fillStyle='#000'; t.fillRect(0,0,W,H); t.drawImage(out,0,0);
