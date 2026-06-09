@@ -1,6 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
-<head>
+<html lang="en"><head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>DLA</title>
@@ -28,10 +27,22 @@
 
   /* ---- artboard stage ---- */
   #stage{position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
-    overflow:auto; padding:78px 28px 140px;}
+    overflow:hidden;}
   #wrap{position:relative; line-height:0; outline:1px solid var(--line);
     box-shadow:0 30px 90px rgba(0,0,0,.75);
-    background:repeating-conic-gradient(#101113 0% 25%, transparent 0% 50%) 0 0/22px 22px;}
+    background:repeating-conic-gradient(#101113 0% 25%, transparent 0% 50%) 0 0/22px 22px;
+    transform-origin:center center; will-change:transform;}
+  body.panning{cursor:grab !important}
+  body.panning *{cursor:grab !important}
+  body.panning:active{cursor:grabbing !important}
+  body.panning:active *{cursor:grabbing !important}
+
+  /* ---- zoom indicator ---- */
+  #zoomHud{position:fixed; bottom:88px; left:18px; z-index:35;
+    font-size:10px; letter-spacing:.1em; color:var(--dim);
+    background:var(--surface); border:1px solid var(--line); border-radius:8px;
+    padding:5px 9px; pointer-events:none; transition:opacity .25s; opacity:0}
+  #zoomHud.vis{opacity:1}
   #wrap canvas,#wrap img{position:absolute; top:0; left:0}
   #ref{position:relative}
   #ui{cursor:crosshair; touch-action:none}
@@ -150,26 +161,26 @@
 <!-- top-left: identity + file I/O -->
 <div class="hud tl">
   <div class="brand">
-    <span class="mk ico"><svg viewBox="0 0 24 24"><path d="M3 19 9 8l3.5 5.5L15 10l6 9z"/></svg></span>
+    <span class="mk ico"><svg viewBox="0 0 24 24"><path d="M3 19 9 8l3.5 5.5L15 10l6 9z"></path></svg></span>
   </div>
   <div class="cluster">
     <button class="btn file" title="Load reference image">
-      <span class="ico"><svg viewBox="0 0 24 24"><path d="M12 15V4"/><path d="M8 8l4-4 4 4"/><path d="M4 16v3a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-3"/></svg></span>
+      <span class="ico"><svg viewBox="0 0 24 24"><path d="M12 15V4"></path><path d="M8 8l4-4 4 4"></path><path d="M4 16v3a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-3"></path></svg></span>
       <span class="cap">Load</span>
       <input type="file" id="img" accept="image/*">
     </button>
     <button class="btn" id="export" title="Export heightmap as PNG (black background)">
-      <span class="ico"><svg viewBox="0 0 24 24"><path d="M12 4v11"/><path d="M8 11l4 4 4-4"/><path d="M4 16v3a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-3"/></svg></span>
+      <span class="ico"><svg viewBox="0 0 24 24"><path d="M12 4v11"></path><path d="M8 11l4 4 4-4"></path><path d="M4 16v3a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-3"></path></svg></span>
       <span class="cap">Export</span>
     </button>
   </div>
   <div class="cluster">
-    <button class="btn" id="undoBtn" title="Undo (Ctrl/Cmd+Z)" disabled>
-      <span class="ico"><svg viewBox="0 0 24 24"><path d="M8 7 3 12l5 5"/><path d="M3 12h10a6 6 0 0 1 6 6v1"/></svg></span>
+    <button class="btn" id="undoBtn" title="Undo (Ctrl/Cmd+Z)" disabled="">
+      <span class="ico"><svg viewBox="0 0 24 24"><path d="M8 7 3 12l5 5"></path><path d="M3 12h10a6 6 0 0 1 6 6v1"></path></svg></span>
       <span class="cap">Undo</span>
     </button>
-    <button class="btn" id="redoBtn" title="Redo (Ctrl/Cmd+Y)" disabled>
-      <span class="ico"><svg viewBox="0 0 24 24"><path d="M16 7l5 5-5 5"/><path d="M21 12H11a6 6 0 0 0-6 6v1"/></svg></span>
+    <button class="btn" id="redoBtn" title="Redo (Ctrl/Cmd+Y)" disabled="">
+      <span class="ico"><svg viewBox="0 0 24 24"><path d="M16 7l5 5-5 5"></path><path d="M21 12H11a6 6 0 0 0-6 6v1"></path></svg></span>
       <span class="cap">Redo</span>
     </button>
   </div>
@@ -179,19 +190,22 @@
 <div class="hud tr">
   <div class="cluster">
     <button class="btn" id="bakeBtn" title="Bake the current mountain and start a new mask">
-      <span class="ico"><svg viewBox="0 0 24 24"><path d="M12 3 4 7l8 4 8-4z"/><path d="M4 12l8 4 8-4"/><path d="M4 16.5l8 4 8-4"/></svg></span>
+      <span class="ico"><svg viewBox="0 0 24 24"><path d="M12 3 4 7l8 4 8-4z"></path><path d="M4 12l8 4 8-4"></path><path d="M4 16.5l8 4 8-4"></path></svg></span>
       <span class="cap">Bake</span>
     </button>
     <button class="btn" id="reset" title="Reset active growth back to its seeds">
-      <span class="ico"><svg viewBox="0 0 24 24"><path d="M4 4v5h5"/><path d="M4.5 9a8 8 0 1 1-1.2 5"/></svg></span>
+      <span class="ico"><svg viewBox="0 0 24 24"><path d="M4 4v5h5"></path><path d="M4.5 9a8 8 0 1 1-1.2 5"></path></svg></span>
       <span class="cap">Reset</span>
     </button>
     <button class="btn" id="clrAll" title="Clear everything, including baked terrain">
-      <span class="ico"><svg viewBox="0 0 24 24"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"/></svg></span>
+      <span class="ico"><svg viewBox="0 0 24 24"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"></path></svg></span>
       <span class="cap">Clear</span>
     </button>
   </div>
 </div>
+
+<!-- zoom level indicator -->
+<div id="zoomHud">100%</div>
 
 <!-- artboard -->
 <div id="stage">
@@ -216,7 +230,7 @@
   <div class="col grain">
     <h2>Directional grain</h2>
     <div class="dial">
-      <div id="dialPad"><div id="dialDot"></div></div>
+      <div id="dialPad"><div id="dialDot" style="left: 50%; top: 88%;"></div></div>
       <div class="ctl" style="flex:1">
         <div class="top"><span class="nm">Drift</span><span class="val" id="driftV">0.00</span></div>
         <input type="range" id="drift" min="0" max="100" value="0">
@@ -250,25 +264,25 @@
 <div class="dock">
   <div class="seg">
     <button class="tool-btn on" id="tMask" title="Mask — paint the growth region">
-      <span class="ico"><svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="1.5" stroke-dasharray="3 3"/></svg></span>
+      <span class="ico"><svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="1.5" stroke-dasharray="3 3"></rect></svg></span>
       <span>Mask</span>
     </button>
     <button class="tool-btn" id="tLasso" title="Lasso — drag a loop to add a region (Alt-drag subtracts)">
-      <span class="ico"><svg viewBox="0 0 24 24"><ellipse cx="12" cy="9" rx="8" ry="5"/><path d="M6.7 13.4c.2 1.8 1.1 2.9 1.1 4.1a1.6 1.6 0 0 1-3.2 0"/></svg></span>
+      <span class="ico"><svg viewBox="0 0 24 24"><ellipse cx="12" cy="9" rx="8" ry="5"></ellipse><path d="M6.7 13.4c.2 1.8 1.1 2.9 1.1 4.1a1.6 1.6 0 0 1-3.2 0"></path></svg></span>
       <span>Lasso</span>
     </button>
     <button class="tool-btn" id="tErase" title="Erase the mask">
-      <span class="ico"><svg viewBox="0 0 24 24"><path d="M4 15 13 6l5 5-7 7H8z"/><path d="M9.5 20H20"/></svg></span>
+      <span class="ico"><svg viewBox="0 0 24 24"><path d="M4 15 13 6l5 5-7 7H8z"></path><path d="M9.5 20H20"></path></svg></span>
       <span>Erase</span>
     </button>
     <button class="tool-btn" id="tSeed" title="Seed — place a 1px ridge origin">
-      <span class="ico"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="2.4"/><path d="M12 5.5V2M12 22v-3.5M5.5 12H2M22 12h-3.5M7.3 7.3 5.5 5.5M18.5 5.5 16.7 7.3M7.3 16.7 5.5 18.5M16.7 16.7 18.5 18.5"/></svg></span>
+      <span class="ico"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="2.4"></circle><path d="M12 5.5V2M12 22v-3.5M5.5 12H2M22 12h-3.5M7.3 7.3 5.5 5.5M18.5 5.5 16.7 7.3M7.3 16.7 5.5 18.5M16.7 16.7 18.5 18.5"></path></svg></span>
       <span>Seed</span>
     </button>
   </div>
 
   <div class="brush-ctl" id="brushCtl">
-    <span class="ico"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="6"/></svg></span>
+    <span class="ico"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="6"></circle></svg></span>
     <input type="range" id="brush" min="4" max="160" value="40" title="Brush size">
     <span class="val" id="brushV">40</span>
   </div>
@@ -277,411 +291,561 @@
 
   <span class="status" id="sMsg">—</span>
 
-  <button class="run" id="run" disabled aria-label="Run simulation">
-    <span class="ico i-run"><svg viewBox="0 0 24 24"><path d="M7 5v14l12-7z"/></svg></span>
-    <span class="ico i-stop"><svg viewBox="0 0 24 24"><rect x="6" y="6" width="12" height="12" rx="1.5"/></svg></span>
+  <button class="run" id="run" disabled="" aria-label="Run simulation">
+    <span class="ico i-run"><svg viewBox="0 0 24 24"><path d="M7 5v14l12-7z"></path></svg></span>
+    <span class="ico i-stop"><svg viewBox="0 0 24 24"><rect x="6" y="6" width="12" height="12" rx="1.5"></rect></svg></span>
     <span id="runLabel">Run</span>
     <i id="prog"></i>
   </button>
 
   <button class="btn" id="paramToggle" title="Parameters">
-    <span class="ico"><svg viewBox="0 0 24 24"><path d="M4 8h8M16 8h4M4 16h4M12 16h8"/><circle cx="14" cy="8" r="2"/><circle cx="9" cy="16" r="2"/></svg></span>
+    <span class="ico"><svg viewBox="0 0 24 24"><path d="M4 8h8M16 8h4M4 16h4M12 16h8"></path><circle cx="14" cy="8" r="2"></circle><circle cx="9" cy="16" r="2"></circle></svg></span>
   </button>
 </div>
 
 <script>
 const $=id=>document.getElementById(id);
 const wrap=$('wrap');
-let W=0,H=0,N=0, imgEl=null, out=null, octx=null, ui=null, uctx=null, scrim=null;
-
-let mask=null;        // Uint8: 1 = allowed
-let cluster=null;     // Int32: 0 empty, 1 = seed, >=2 = stick order (active mountain)
-let baked=null;       // Uint8: 1 = locked terrain (obstacle, not a stick target)
-let bakedBright=null; // Uint8: frozen brightness of baked pixels
-let seeds=[];         // {x,y}
-let maxOrder=1, stuck=0, bakedCount=0;
-
-// sim run state
-let isNoGlue=null, spawnPix=null, repel=null, running=false, raf=0, misses=0, frame=0, renderEvery=1, runStart=0;
-
-let tool='mask', painting=false;
-let lassoPts=null, lassoSub=false;
-let undoStack=[], redoStack=[];
-const cfg={brush:40, target:8000, density:0.25, stick:1, speed:600,
-           drift:0, biasAng:270, floor:20, repel:3, activeScale:1, dim:0};
-let curve={c1:{x:.3,y:.1}, c2:{x:.7,y:.45}};
+let W=0,H=0,N=0,imgEl=null,out=null,octx=null,ui=null,uctx=null,scrim=null;
+let mask=null,cluster=null,baked=null,bakedBright=null;
+let seeds=[],maxOrder=1,stuck=0,bakedCount=0;
+let running=false,misses=0,frame=0,renderEvery=1,runStart=0;
+let tool='mask',painting=false,lassoPts=null,lassoSub=false;
+let undoStack=[],redoStack=[];
+const cfg={brush:40,target:8000,density:0.25,stick:1,speed:600,
+           drift:0,biasAng:270,floor:20,repel:3,activeScale:1,dim:0};
+let curve={c1:{x:.3,y:.1},c2:{x:.7,y:.45}};
 const curveLUT=new Float32Array(256);
 let areaCount=0;
-
 const DIRS=[[-1,-1],[0,-1],[1,-1],[-1,0],[1,0],[-1,1],[0,1],[1,1]];
-const DV=[[1,0],[1,-1],[0,-1],[-1,-1],[-1,0],[-1,1],[0,1],[1,1]];     // movement
-const DA=[0,45,90,135,180,225,270,315];                              // angles for DV
+
+/* ---------- web worker (DLA simulation) ---------- */
+const WORKER_SRC=`
+const DX=new Int8Array([-1,0,1,-1,1,-1,0,1]);
+const DY=new Int8Array([-1,-1,-1,0,0,1,1,1]);
+const MVX=new Int8Array([1,1,0,-1,-1,-1,0,1]);
+const MVY=new Int8Array([0,-1,-1,-1,0,1,1,1]);
+const DA=[0,45,90,135,180,225,270,315];
+let rs=Math.random()*0xffffffff>>>0;
+function rng(){rs^=rs<<13;rs^=rs>>>17;rs^=rs<<5;return(rs>>>0)/0x100000000;}
+let W,H,N,mask,cluster,isNoGlue,spawnPix,repel;
+let maxOrder=1,stuck=0,misses=0,frame=0,runStart=0,target=0,renderEvery=1;
+let cfg={speed:600,stick:1,drift:0,biasAng:270};
+let running=false;
+self.onmessage=({data:d})=>{
+  if(d.type==='init'){
+    ({W,H,N,mask,cluster,isNoGlue,spawnPix,repel,maxOrder,stuck,misses,frame,runStart,target,renderEvery}=d);
+    cfg={...d.cfg}; running=true; setTimeout(batch,0);
+  } else if(d.type==='cfg'){
+    cfg={...d.cfg};
+  } else if(d.type==='stop'){
+    running=false;
+  }
+};
+function batch(){
+  if(!running){
+    const c=cluster; cluster=null;
+    self.postMessage({type:'done',cluster:c,maxOrder,stuck,misses},[c.buffer]);
+    return;
+  }
+  const {speed,stick,drift,biasAng}=cfg;
+  let bi=0,md=999;
+  for(let d=0;d<8;d++){let df=Math.abs(biasAng-DA[d]);if(df>180)df=360-df;if(df<md){md=df;bi=d;}}
+  const SP=spawnPix,SPN=SP.length,maxSteps=30000;
+  let done=false,reason='';
+  for(let b=0;b<speed;b++){
+    if(stuck-runStart>=target){done=true;reason='complete';break;}
+    if(misses>2000){done=true;reason='saturated';break;}
+    const s0=SP[(rng()*SPN)|0];
+    if(cluster[s0]>0)continue;
+    let px=s0%W,py=(s0/W)|0,steps=0,did=false;
+    while(steps<maxSteps){
+      const pi=py*W+px;
+      let hit=false;
+      if(!isNoGlue[pi]){
+        for(let n=0;n<8;n++){const nx=px+DX[n],ny=py+DY[n];
+          if(nx>=0&&nx<W&&ny>=0&&ny<H&&cluster[ny*W+nx]>0){hit=true;break;}}
+      }
+      if(hit&&rng()<=stick){maxOrder++;cluster[pi]=maxOrder;stuck++;did=true;break;}
+      const mv=(drift>0&&rng()<=drift)?bi:(rng()*8)|0;
+      const nx=px+MVX[mv],ny=py+MVY[mv];
+      if(nx>=0&&nx<W&&ny>=0&&ny<H){const ni=ny*W+nx;
+        if(mask[ni]&&!cluster[ni]&&!repel[ni]){px=nx;py=ny;}}
+      steps++;
+    }
+    misses=did?0:misses+1;
+  }
+  frame++;
+  if(done){
+    running=false;
+    const c=cluster; cluster=null;
+    self.postMessage({type:'done',cluster:c,maxOrder,stuck,misses,reason},[c.buffer]);
+  } else {
+    if(frame%renderEvery===0){
+      const copy=new Int32Array(cluster);
+      self.postMessage({type:'frame',cluster:copy,maxOrder,stuck,misses,frame},[copy.buffer]);
+    }
+    setTimeout(batch,0);
+  }
+}
+`;
+let simWorker=null,pendingStop=null;
+function initWorker(){
+  if(simWorker)simWorker.terminate();
+  simWorker=new Worker(URL.createObjectURL(new Blob([WORKER_SRC],{type:'text/javascript'})));
+  simWorker.onmessage=({data:d})=>{
+    if(d.type==='frame'){
+      cluster=d.cluster; maxOrder=d.maxOrder; stuck=d.stuck; frame=d.frame;
+      render(); updateStats();
+    } else if(d.type==='done'){
+      cluster=d.cluster; maxOrder=d.maxOrder; stuck=d.stuck;
+      running=false;
+      $('run').classList.remove('running'); $('runLabel').textContent='Run';
+      if(d.reason)status(d.reason);
+      render(); updateStats();
+      const cb=pendingStop; pendingStop=null; cb?.();
+    }
+  };
+}
+/* stop the worker; fn runs after cluster is returned to main thread */
+function stopThen(reason,fn){
+  if(!running){fn?.();return;}
+  pendingStop=fn||null;
+  simWorker.postMessage({type:'stop'});
+  $('run').classList.remove('running'); $('runLabel').textContent='Run';
+  if(reason)status(reason);
+}
 
 /* ---------- image load ---------- */
-$('img').onchange=e=>{const f=e.target.files[0]; if(!f)return;
-  const im=new Image(); im.onload=()=>{W=im.naturalWidth;H=im.naturalHeight;N=W*H;setup(im);};
+$('img').onchange=e=>{const f=e.target.files[0];if(!f)return;
+  const im=new Image();im.onload=()=>{W=im.naturalWidth;H=im.naturalHeight;N=W*H;setup(im);};
   im.src=URL.createObjectURL(f);};
 
 function setup(im){
-  wrap.innerHTML=''; wrap.style.width=W+'px'; wrap.style.height=H+'px';
-  imgEl=im; imgEl.id='ref'; imgEl.width=W; imgEl.height=H; wrap.appendChild(imgEl);
-  scrim=document.createElement('div'); scrim.id='scrim'; scrim.style.opacity=cfg.dim; wrap.appendChild(scrim);
-  out=document.createElement('canvas'); out.width=W; out.height=H; wrap.appendChild(out);
+  wrap.innerHTML='';wrap.style.width=W+'px';wrap.style.height=H+'px';
+  imgEl=im;imgEl.id='ref';imgEl.width=W;imgEl.height=H;
+  imgEl.style.cssText=`width:${W}px;height:${H}px;position:relative;display:block`;
+  wrap.appendChild(imgEl);
+  scrim=document.createElement('div');scrim.id='scrim';
+  scrim.style.cssText=`position:absolute;inset:0;width:${W}px;height:${H}px;background:#000;opacity:0;pointer-events:none`;
+  wrap.appendChild(scrim);
+  out=document.createElement('canvas');out.width=W;out.height=H;wrap.appendChild(out);
   octx=out.getContext('2d',{willReadFrequently:true});
-  ui=document.createElement('canvas'); ui.id='ui'; ui.width=W; ui.height=H; wrap.appendChild(ui);
-  uctx=ui.getContext('2d'); bindPaint();
-  mask=new Uint8Array(N); cluster=new Int32Array(N);
-  baked=new Uint8Array(N); bakedBright=new Uint8Array(N); seeds=[];
-  maxOrder=1; stuck=0; bakedCount=0; renderEvery = N>1500000?3:1;
-  $('run').disabled=false; render(); drawUI(); refreshArea();
-  undoStack=[]; redoStack=[]; updateHistUI(); status('draw a mask');
+  ui=document.createElement('canvas');ui.id='ui';ui.width=W;ui.height=H;wrap.appendChild(ui);
+  uctx=ui.getContext('2d');bindPaint();
+  mask=new Uint8Array(N);cluster=new Int32Array(N);
+  baked=new Uint8Array(N);bakedBright=new Uint8Array(N);seeds=[];
+  maxOrder=1;stuck=0;bakedCount=0;running=false;renderEvery=N>1500000?3:1;
+  initWorker();
+  $('run').disabled=false;render();drawUI();refreshArea();
+  undoStack=[];redoStack=[];updateHistUI();status('draw a mask');
+  requestAnimationFrame(()=>window._fitAfterSetup?.());
 }
 
-/* ---------- order-brightness render (transparent where empty) ---------- */
+/* ---------- render ---------- */
 function render(){
-  if(!octx)return;
-  const img=octx.createImageData(W,H), d=img.data;
-  const fl=cfg.floor, sm=Math.max(1,maxOrder), sc=cfg.activeScale;
+  if(!octx||!cluster)return;
+  const img=octx.createImageData(W,H),d=img.data;
+  const fl=cfg.floor,sm=Math.max(1,maxOrder),sc=cfg.activeScale;
   for(let i=0;i<N;i++){
-    if(baked[i]){ const p=i*4; const b=bakedBright[i]; d[p]=d[p+1]=d[p+2]=b; d[p+3]=255; continue; }
-    const v=cluster[i]; if(v<=0)continue;          // empty -> transparent
+    if(baked[i]){const p=i*4,b=bakedBright[i];d[p]=d[p+1]=d[p+2]=b;d[p+3]=255;continue;}
+    const v=cluster[i];if(v<=0)continue;
     let b;
-    if(v===1) b=255;                               // seed
-    else { let nrm=1-(v/sm); if(nrm<0)nrm=0; b=fl+(255-fl)*curveLUT[(nrm*255)|0]; }
-    b*=sc; if(b<0)b=0; else if(b>255)b=255;
-    const p=i*4; d[p]=d[p+1]=d[p+2]=b; d[p+3]=255;
+    if(v===1)b=255;
+    else{let nrm=1-(v/sm);if(nrm<0)nrm=0;b=fl+(255-fl)*curveLUT[(nrm*255)|0];}
+    b*=sc;if(b<0)b=0;else if(b>255)b=255;
+    const p=i*4;d[p]=d[p+1]=d[p+2]=b;d[p+3]=255;
   }
   octx.putImageData(img,0,0);
 }
 
 /* ---------- painting ---------- */
-let uiDirty=false, outDirty=false, flushQueued=false;
-function flushNow(){ if(outDirty){render();outDirty=false;} if(uiDirty){drawUI();uiDirty=false;}
-  if(painting&&tool==='lasso'&&lassoPts&&lassoPts.length) drawLassoOverlay();
-  flushQueued=false; }
-function queueFlush(){ if(!flushQueued){flushQueued=true; requestAnimationFrame(flushNow);} }
+let uiDirty=false,outDirty=false,flushQueued=false;
+function flushNow(){if(outDirty){render();outDirty=false;}if(uiDirty){drawUI();uiDirty=false;}
+  if(painting&&tool==='lasso'&&lassoPts&&lassoPts.length)drawLassoOverlay();
+  flushQueued=false;}
+function queueFlush(){if(!flushQueued){flushQueued=true;requestAnimationFrame(flushNow);}}
 
 function bindPaint(){
   const map=e=>{const r=ui.getBoundingClientRect();
-    return {x:Math.floor((e.clientX-r.left)*W/r.width),
-            y:Math.floor((e.clientY-r.top)*H/r.height),
-            p:(e.pointerType==='pen')?(e.pressure||0):1};};
-  // expand to coalesced samples (Pencil fires faster than pointermove)
-  const stroke=e=>{ const evs=(e.getCoalescedEvents&&e.pointerType==='pen')?e.getCoalescedEvents():[e];
-    for(const ev of evs){ const m=map(ev); paint(m.x,m.y,m.p); } };
-  ui.onpointerdown=e=>{ if(running)return; pushUndo(); painting=true; ui.setPointerCapture(e.pointerId);
-    if(tool==='lasso'){ lassoSub=e.altKey; const m=map(e); lassoPts=[[m.x,m.y]]; uiDirty=true; queueFlush(); }
-    else stroke(e); };
-  ui.onpointermove=e=>{ if(!painting)return;
-    if(tool==='lasso'){ const m=map(e), L=lassoPts[lassoPts.length-1];
-      if(!L||L[0]!==m.x||L[1]!==m.y){ lassoPts.push([m.x,m.y]); uiDirty=true; queueFlush(); } }
-    else stroke(e); };
-  ui.onpointerup=()=>{ painting=false;
-    if(tool==='lasso'){ commitLasso(); lassoPts=null; }
-    flushNow(); refreshArea(); };
-  ui.onpointercancel=()=>{ painting=false; lassoPts=null; flushNow(); refreshArea(); };
-}
-// even-odd scanline fill of a freehand loop into the mask
+    return{x:Math.floor((e.clientX-r.left)*W/r.width),
+           y:Math.floor((e.clientY-r.top)*H/r.height),
+           p:(e.pointerType==='pen')?(e.pressure||0):1};};
+  const stroke=e=>{const evs=(e.getCoalescedEvents&&e.pointerType==='pen')?e.getCoalescedEvents():[e];
+    for(const ev of evs){const m=map(ev);paint(m.x,m.y,m.p);}};
+  ui.onpointerdown=e=>{if(running)return;if(e.button===1||window._panActive?.())return;
+    pushUndo();painting=true;ui.setPointerCapture(e.pointerId);
+    if(tool==='lasso'){lassoSub=e.altKey;const m=map(e);lassoPts=[[m.x,m.y]];uiDirty=true;queueFlush();}
+    else stroke(e);};
+  ui.onpointermove=e=>{if(!painting)return;
+    if(tool==='lasso'){const m=map(e),L=lassoPts[lassoPts.length-1];
+      if(!L||L[0]!==m.x||L[1]!==m.y){lassoPts.push([m.x,m.y]);uiDirty=true;queueFlush();}}
+    else stroke(e);};
+  ui.onpointerup=()=>{painting=false;
+    if(tool==='lasso'){commitLasso();lassoPts=null;}
+    flushNow();refreshArea();};
+  ui.onpointercancel=()=>{painting=false;lassoPts=null;flushNow();refreshArea();};}
+
 function fillPolygon(pts,val){
-  let minY=H,maxY=0; for(const p of pts){ if(p[1]<minY)minY=p[1]; if(p[1]>maxY)maxY=p[1]; }
-  minY=Math.max(0,minY|0); maxY=Math.min(H-1,maxY|0); const n=pts.length;
+  let minY=H,maxY=0;for(const p of pts){if(p[1]<minY)minY=p[1];if(p[1]>maxY)maxY=p[1];}
+  minY=Math.max(0,minY|0);maxY=Math.min(H-1,maxY|0);const n=pts.length;
   for(let y=minY;y<=maxY;y++){
     const xs=[];
-    for(let i=0,j=n-1;i<n;j=i++){ const yi=pts[i][1],yj=pts[j][1];
-      if((yi<=y&&yj>y)||(yj<=y&&yi>y)){ const t=(y-yi)/(yj-yi); xs.push(pts[i][0]+t*(pts[j][0]-pts[i][0])); } }
+    for(let i=0,j=n-1;i<n;j=i++){const yi=pts[i][1],yj=pts[j][1];
+      if((yi<=y&&yj>y)||(yj<=y&&yi>y)){const t=(y-yi)/(yj-yi);xs.push(pts[i][0]+t*(pts[j][0]-pts[i][0]));}}
     xs.sort((a,b)=>a-b);
     for(let k=0;k+1<xs.length;k+=2){
-      const x0=Math.max(0,Math.ceil(xs[k])), x1=Math.min(W-1,Math.floor(xs[k+1]));
-      for(let x=x0;x<=x1;x++){ const idx=y*W+x; mask[idx]=val; if(!val&&cluster[idx]>0)cluster[idx]=0; } }
-  }
-}
-function commitLasso(){ if(!lassoPts||lassoPts.length<3)return;
-  fillPolygon(lassoPts, lassoSub?0:1); if(lassoSub)outDirty=true; uiDirty=true; }
-function drawLassoOverlay(){ const pts=lassoPts; if(!pts||!pts.length)return;
+      const x0=Math.max(0,Math.ceil(xs[k])),x1=Math.min(W-1,Math.floor(xs[k+1]));
+      for(let x=x0;x<=x1;x++){const idx=y*W+x;mask[idx]=val;if(!val&&cluster[idx]>0)cluster[idx]=0;}}}}
+function commitLasso(){if(!lassoPts||lassoPts.length<3)return;
+  fillPolygon(lassoPts,lassoSub?0:1);if(lassoSub)outDirty=true;uiDirty=true;}
+function drawLassoOverlay(){const pts=lassoPts;if(!pts||!pts.length)return;
   const sc=(ui.getBoundingClientRect().width/W)||1;
-  uctx.save(); uctx.lineJoin='round'; uctx.lineWidth=Math.max(1,1.4/sc);
-  uctx.beginPath(); uctx.moveTo(pts[0][0]+.5,pts[0][1]+.5);
-  for(let i=1;i<pts.length;i++) uctx.lineTo(pts[i][0]+.5,pts[i][1]+.5);
+  uctx.save();uctx.lineJoin='round';uctx.lineWidth=Math.max(1,1.4/sc);
+  uctx.beginPath();uctx.moveTo(pts[0][0]+.5,pts[0][1]+.5);
+  for(let i=1;i<pts.length;i++)uctx.lineTo(pts[i][0]+.5,pts[i][1]+.5);
   uctx.closePath();
-  uctx.fillStyle=lassoSub?'rgba(217,139,95,.12)':'rgba(232,227,211,.12)'; uctx.fill();
-  uctx.strokeStyle=lassoSub?'rgba(217,139,95,.95)':'rgba(232,227,211,.95)'; uctx.stroke();
-  uctx.restore();
-}
+  uctx.fillStyle=lassoSub?'rgba(217,139,95,.12)':'rgba(232,227,211,.12)';uctx.fill();
+  uctx.strokeStyle=lassoSub?'rgba(217,139,95,.95)':'rgba(232,227,211,.95)';uctx.stroke();
+  uctx.restore();}
 function paint(x,y,pr){
   if(pr===undefined)pr=1;
   if(tool==='seed'){
-    if(x>=0&&y>=0&&x<W&&y<H&&mask[y*W+x]&&!baked[y*W+x]){ const i=y*W+x;
-      if(cluster[i]!==1){ seeds.push({x,y}); cluster[i]=1; stuck++; render(); } }
-    painting=false; drawUI(); updateStats(); return;
-  }
-  // pressure scales radius (pen only; mouse/touch report pr=1 -> full brush)
-  const r=Math.max(1, pr>=1 ? cfg.brush/2 : (cfg.brush/2)*(0.18+0.82*pr));
+    if(x>=0&&y>=0&&x<W&&y<H&&mask[y*W+x]&&!baked[y*W+x]){const i=y*W+x;
+      if(cluster[i]!==1){seeds.push({x,y});cluster[i]=1;stuck++;render();}}
+    painting=false;drawUI();updateStats();return;}
+  const r=Math.max(1,pr>=1?cfg.brush/2:(cfg.brush/2)*(0.18+0.82*pr));
   const v=tool==='mask'?1:0;
   for(let dy=-r;dy<=r;dy++)for(let dx=-r;dx<=r;dx++){
-    if(dx*dx+dy*dy>r*r)continue; const px=x+dx|0,py=y+dy|0;
+    if(dx*dx+dy*dy>r*r)continue;const px=x+dx|0,py=y+dy|0;
     if(px<0||py<0||px>=W||py>=H)continue;
-    const i=py*W+px; mask[i]=v;
-    if(!v && cluster[i]>0){ cluster[i]=0; outDirty=true; }   // erasing removes active growth
-  }
-  uiDirty=true; queueFlush();
-}
+    const i=py*W+px;mask[i]=v;
+    if(!v&&cluster[i]>0){cluster[i]=0;outDirty=true;}}
+  uiDirty=true;queueFlush();}
 function drawUI(){
   uctx.clearRect(0,0,W,H);
   const im=uctx.createImageData(W,H),d=im.data;
-  for(let i=0;i<N;i++){ if(mask[i]&&cluster[i]<=0){d[i*4]=232;d[i*4+1]=227;d[i*4+2]=211;d[i*4+3]=26;} }
+  for(let i=0;i<N;i++){if(mask[i]&&cluster[i]<=0){d[i*4]=232;d[i*4+1]=227;d[i*4+2]=211;d[i*4+3]=26;}}
   uctx.putImageData(im,0,0);
   uctx.fillStyle='#d98b5f';
-  for(const s of seeds){ uctx.fillRect(s.x,s.y,1,1);
-    uctx.strokeStyle='rgba(217,139,95,.45)'; uctx.lineWidth=1;
-    uctx.beginPath();uctx.arc(s.x+0.5,s.y+0.5,4,0,7);uctx.stroke(); }
-}
+  for(const s of seeds){uctx.fillRect(s.x,s.y,1,1);
+    uctx.strokeStyle='rgba(217,139,95,.45)';uctx.lineWidth=1;
+    uctx.beginPath();uctx.arc(s.x+0.5,s.y+0.5,4,0,7);uctx.stroke();}}
 
-/* ---------- precompute teflon perimeter + interior spawn set ---------- */
+/* ---------- precompute — returns transferable arrays for the worker ---------- */
 function precompute(){
-  isNoGlue=new Uint8Array(N); spawnPix=[];
-
-  // repel = baked terrain dilated by cfg.repel (a moat new growth can't enter)
-  repel=baked;
-  if(cfg.repel>0 && bakedCount>0){
-    let cur=Uint8Array.from(baked);
-    for(let it=0; it<cfg.repel; it++){
-      const nxt=Uint8Array.from(cur);
-      for(let y=0;y<H;y++)for(let x=0;x<W;x++){ const i=y*W+x; if(cur[i])continue;
-        for(let n=0;n<8;n++){ const ax=x+DIRS[n][0],ay=y+DIRS[n][1];
-          if(ax>=0&&ax<W&&ay>=0&&ay<H&&cur[ay*W+ax]){nxt[i]=1;break;} } }
-      cur=nxt;
-    }
-    repel=cur;
+  const isNoGlue=new Uint8Array(N);
+  let repelMap;
+  if(cfg.repel>0&&bakedCount>0){
+    let cur=new Uint8Array(baked);
+    for(let it=0;it<cfg.repel;it++){
+      const nxt=new Uint8Array(cur);
+      for(let y=0;y<H;y++)for(let x=0;x<W;x++){const i=y*W+x;if(cur[i])continue;
+        for(let n=0;n<8;n++){const ax=x+DIRS[n][0],ay=y+DIRS[n][1];
+          if(ax>=0&&ax<W&&ay>=0&&ay<H&&cur[ay*W+ax]){nxt[i]=1;break;}}}
+      cur=nxt;}
+    repelMap=cur;
+  } else {
+    repelMap=new Uint8Array(baked); // copy, not alias — must be transferable
   }
-
   const edge=new Uint8Array(N);
-  for(let y=0;y<H;y++)for(let x=0;x<W;x++){ const i=y*W+x; if(!mask[i])continue;
+  for(let y=0;y<H;y++)for(let x=0;x<W;x++){const i=y*W+x;if(!mask[i])continue;
     let e=false;
-    for(let n=0;n<8;n++){ const nx=x+DIRS[n][0],ny=y+DIRS[n][1];
-      if(nx<0||nx>=W||ny<0||ny>=H||!mask[ny*W+nx]){e=true;break;} }
-    if(e)edge[i]=1;
-  }
-  for(let y=0;y<H;y++)for(let x=0;x<W;x++){ const i=y*W+x; if(!mask[i])continue;
-    if(edge[i]){ isNoGlue[i]=1; continue; }
+    for(let n=0;n<8;n++){const nx=x+DIRS[n][0],ny=y+DIRS[n][1];
+      if(nx<0||nx>=W||ny<0||ny>=H||!mask[ny*W+nx]){e=true;break;}}
+    if(e)edge[i]=1;}
+  const spawnArr=[];
+  for(let y=0;y<H;y++)for(let x=0;x<W;x++){const i=y*W+x;if(!mask[i])continue;
+    if(edge[i]){isNoGlue[i]=1;continue;}
     let near=false;
-    for(let n=0;n<8;n++){ const nx=x+DIRS[n][0],ny=y+DIRS[n][1];
-      if(nx>=0&&nx<W&&ny>=0&&ny<H&&edge[ny*W+nx]){near=true;break;} }
-    if(near) isNoGlue[i]=1; else if(!repel[i]) spawnPix.push(i);
-  }
-  if(!spawnPix.length){ for(let i=0;i<N;i++)if(mask[i]&&!repel[i])spawnPix.push(i); }
-}
+    for(let n=0;n<8;n++){const nx=x+DIRS[n][0],ny=y+DIRS[n][1];
+      if(nx>=0&&nx<W&&ny>=0&&ny<H&&edge[ny*W+nx]){near=true;break;}}
+    if(near)isNoGlue[i]=1;else if(!repelMap[i])spawnArr.push(i);}
+  if(!spawnArr.length){for(let i=0;i<N;i++)if(mask[i]&&!repelMap[i])spawnArr.push(i);}
+  return{isNoGlue,repelMap,spawnPix:new Int32Array(spawnArr)};}
 
 /* ---------- simulation ---------- */
-function loop(){
-  if(!running)return;
-  const batch=cfg.speed, maxSteps=30000, stickP=cfg.stick, biasStr=cfg.drift;
-  // closest movement dir to bias angle
-  let bi=0,md=999; for(let d=0;d<8;d++){ let df=Math.abs(cfg.biasAng-DA[d]); if(df>180)df=360-df;
-    if(df<md){md=df;bi=d;} }
-  const SP=spawnPix, SPN=SP.length;
-
-  for(let b=0;b<batch;b++){
-    if(stuck-runStart>=cfg.target){ stop('complete'); return; }
-    if(misses>2000){ stop('saturated'); return; }
-    const s0=SP[(Math.random()*SPN)|0];
-    if(cluster[s0]>0){ continue; }
-    let px=s0%W, py=(s0/W)|0, steps=0, did=false;
-    while(steps<maxSteps){
-      const pi=py*W+px;
-      let hit=false;
-      if(isNoGlue[pi]===0){
-        for(let n=0;n<8;n++){ const nx=px+DIRS[n][0],ny=py+DIRS[n][1];
-          if(nx>=0&&nx<W&&ny>=0&&ny<H&&cluster[ny*W+nx]>0){hit=true;break;} }
-      }
-      if(hit && Math.random()<=stickP){
-        maxOrder++; cluster[pi]=maxOrder; stuck++; did=true; break;
-      }
-      const mv=(biasStr>0&&Math.random()<=biasStr)?bi:(Math.random()*8)|0;
-      const nx=px+DV[mv][0], ny=py+DV[mv][1];
-      if(nx>=0&&nx<W&&ny>=0&&ny<H){ const ni=ny*W+nx;
-        if(mask[ni]===1&&cluster[ni]===0&&repel[ni]===0){ px=nx; py=ny; } }
-      steps++;
-    }
-    misses = did?0:misses+1;
-  }
-  frame++;
-  if(frame%renderEvery===0) render();
-  updateStats();
-  raf=requestAnimationFrame(loop);
-}
 function startSim(){
-  if(!seeds.length){ status('add a seed'); return; }
+  if(!seeds.length){status('add a seed');return;}
   refreshArea();
-  if(!areaCount){ status('draw a mask'); return; }
+  if(!areaCount){status('draw a mask');return;}
   cfg.target=Math.max(1,Math.round(cfg.density*areaCount));
-  precompute(); misses=0; frame=0; runStart=stuck; running=true;
-  $('run').classList.add('running'); $('runLabel').textContent='Stop';
-  status('running'); loop();
-}
-function stop(reason){
-  running=false; cancelAnimationFrame(raf); render(); updateStats();
-  $('run').classList.remove('running'); $('runLabel').textContent='Run';
-  if(reason)status(reason);
+  const{isNoGlue,repelMap,spawnPix}=precompute();
+  misses=0;frame=0;runStart=stuck;running=true;
+  $('run').classList.add('running');$('runLabel').textContent='Stop';
+  status('running');
+  simWorker.postMessage({
+    type:'init',W,H,N,
+    mask:new Uint8Array(mask),  // copy — main keeps original for painting
+    cluster,                     // transfer ownership to worker
+    isNoGlue,spawnPix,repel:repelMap,
+    maxOrder,stuck,misses,frame,runStart,
+    target:cfg.target,renderEvery,
+    cfg:{speed:cfg.speed,stick:cfg.stick,drift:cfg.drift,biasAng:cfg.biasAng}
+  },[cluster.buffer,isNoGlue.buffer,spawnPix.buffer,repelMap.buffer]);
+  cluster=null; // detached; restored on first 'frame' or 'done' message
 }
 
 /* ---------- reset / clear ---------- */
 function resetGrowth(){
-  cluster.fill(0); for(const s of seeds)cluster[s.y*W+s.x]=1;
-  maxOrder=1; stuck=seeds.length; render(); updateStats(); status('reset');
-}
+  cluster.fill(0);for(const s of seeds)cluster[s.y*W+s.x]=1;
+  maxOrder=1;stuck=seeds.length;render();updateStats();status('reset');}
 function bake(){
-  const sm=Math.max(1,maxOrder), fl=cfg.floor, sc=cfg.activeScale; let any=false;
-  for(let i=0;i<N;i++){ const v=cluster[i]; if(v<=0)continue; any=true;
-    let b; if(v===1)b=255;
-    else{ let nrm=1-(v/sm); if(nrm<0)nrm=0; b=fl+(255-fl)*curveLUT[(nrm*255)|0]; }
-    b*=sc; if(b<0)b=0; else if(b>255)b=255; b=b|0;
-    baked[i]=1; bakedBright[i]=b; cluster[i]=0; bakedCount++;
-  }
-  seeds=[]; maxOrder=1; stuck=0; return any;
-}
-function bakeAndClearMask(){ if(running)stop();
-  const did=bake(); mask.fill(0);
-  cfg.activeScale=1; $('maxh').value=100; $('maxhV').textContent='100%';
-  render(); drawUI(); updateStats(); refreshArea(); status(did?'baked — draw next mask':'mask cleared'); }
-function clearAll(){ if(running)stop();
-  mask.fill(0); cluster.fill(0); baked.fill(0); bakedBright.fill(0);
-  seeds=[]; maxOrder=1; stuck=0; bakedCount=0;
-  render(); drawUI(); updateStats(); refreshArea(); status('cleared all'); }
-function clearSeeds(){ cluster.fill(0); seeds=[]; maxOrder=1; stuck=0;
-  render(); drawUI(); updateStats(); refreshArea(); status('seeds cleared'); }
+  const sm=Math.max(1,maxOrder),fl=cfg.floor,sc=cfg.activeScale;let any=false;
+  for(let i=0;i<N;i++){const v=cluster[i];if(v<=0)continue;any=true;
+    let b;if(v===1)b=255;
+    else{let nrm=1-(v/sm);if(nrm<0)nrm=0;b=fl+(255-fl)*curveLUT[(nrm*255)|0];}
+    b*=sc;if(b<0)b=0;else if(b>255)b=255;b=b|0;
+    baked[i]=1;bakedBright[i]=b;cluster[i]=0;bakedCount++;}
+  seeds=[];maxOrder=1;stuck=0;return any;}
+function bakeAndClearMask(){
+  const did=bake();mask.fill(0);
+  cfg.activeScale=1;$('maxh').value=100;$('maxhV').textContent='100%';
+  render();drawUI();updateStats();refreshArea();status(did?'baked — draw next mask':'mask cleared');}
+function clearAll(){
+  mask.fill(0);cluster.fill(0);baked.fill(0);bakedBright.fill(0);
+  seeds=[];maxOrder=1;stuck=0;bakedCount=0;
+  render();drawUI();updateStats();refreshArea();status('cleared all');}
+function clearSeeds(){cluster.fill(0);seeds=[];maxOrder=1;stuck=0;
+  render();drawUI();updateStats();refreshArea();status('seeds cleared');}
 
 /* ---------- controls ---------- */
-function status(t){ $('sMsg').textContent=t; }
-function refreshArea(){ if(!mask){areaCount=0;updateAreaUI();return;}
-  let c=0; for(let i=0;i<N;i++) if(mask[i]&&!baked[i]) c++;
-  areaCount=c; updateAreaUI(); }
-function updateAreaUI(){ $('estParticles').textContent=Math.round(cfg.density*areaCount).toLocaleString(); }
-function updateStats(){ $('sSeeds').textContent=seeds.length;
+function status(t){$('sMsg').textContent=t;}
+function refreshArea(){if(!mask){areaCount=0;updateAreaUI();return;}
+  let c=0;for(let i=0;i<N;i++)if(mask[i]&&!baked[i])c++;
+  areaCount=c;updateAreaUI();}
+function updateAreaUI(){$('estParticles').textContent=Math.round(cfg.density*areaCount).toLocaleString();}
+function updateStats(){$('sSeeds').textContent=seeds.length;
   $('sStuck').textContent=stuck.toLocaleString();
   $('sBaked').textContent=bakedCount.toLocaleString();
-  $('prog').style.width=Math.max(0,Math.min(100,(stuck-runStart)/cfg.target*100))+'%'; }
-/* ---------- undo / redo (full-state snapshots at action boundaries) ---------- */
-function snapshot(){ return {mask:mask.slice(), cluster:cluster.slice(), baked:baked.slice(),
-  bakedBright:bakedBright.slice(), seeds:seeds.map(s=>({x:s.x,y:s.y})),
-  maxOrder, stuck, bakedCount}; }
-function restore(s){ mask=s.mask.slice(); cluster=s.cluster.slice(); baked=s.baked.slice();
-  bakedBright=s.bakedBright.slice(); seeds=s.seeds.map(p=>({x:p.x,y:p.y}));
-  maxOrder=s.maxOrder; stuck=s.stuck; bakedCount=s.bakedCount;
-  render(); drawUI(); updateStats(); refreshArea(); }
-function pushUndo(){ if(!mask)return; undoStack.push(snapshot());
-  const cap=N>1500000?8:25; while(undoStack.length>cap)undoStack.shift();
-  redoStack.length=0; updateHistUI(); }
-function undo(){ if(!undoStack.length)return; if(running)stop();
-  redoStack.push(snapshot()); restore(undoStack.pop()); updateHistUI(); status('undo'); }
-function redo(){ if(!redoStack.length)return; if(running)stop();
-  undoStack.push(snapshot()); restore(redoStack.pop()); updateHistUI(); status('redo'); }
-function updateHistUI(){ const u=$('undoBtn'),r=$('redoBtn');
-  if(u)u.disabled=!undoStack.length; if(r)r.disabled=!redoStack.length; }
+  $('prog').style.width=Math.max(0,Math.min(100,(stuck-runStart)/cfg.target*100))+'%';}
 
-function slider(id,vid,fn,fmt){ const s=$(id),v=$(vid);
-  const u=()=>{fn(+s.value);v.textContent=fmt?fmt(+s.value):s.value;}; s.oninput=u; u(); }
+/* ---------- undo / redo ---------- */
+function snapshot(){return{mask:mask.slice(),cluster:cluster.slice(),baked:baked.slice(),
+  bakedBright:bakedBright.slice(),seeds:seeds.map(s=>({x:s.x,y:s.y})),maxOrder,stuck,bakedCount};}
+function restore(s){mask=s.mask.slice();cluster=s.cluster.slice();baked=s.baked.slice();
+  bakedBright=s.bakedBright.slice();seeds=s.seeds.map(p=>({x:p.x,y:p.y}));
+  maxOrder=s.maxOrder;stuck=s.stuck;bakedCount=s.bakedCount;
+  render();drawUI();updateStats();refreshArea();}
+function pushUndo(){if(!mask||!cluster)return;undoStack.push(snapshot());
+  const cap=N>1500000?8:25;while(undoStack.length>cap)undoStack.shift();
+  redoStack.length=0;updateHistUI();}
+function undo(){stopThen('',()=>{if(!undoStack.length)return;
+  redoStack.push(snapshot());restore(undoStack.pop());updateHistUI();status('undo');});}
+function redo(){stopThen('',()=>{if(!redoStack.length)return;
+  undoStack.push(snapshot());restore(redoStack.pop());updateHistUI();status('redo');});}
+function updateHistUI(){const u=$('undoBtn'),r=$('redoBtn');
+  if(u)u.disabled=!undoStack.length;if(r)r.disabled=!redoStack.length;}
+
+function slider(id,vid,fn,fmt){const s=$(id),v=$(vid);
+  const u=()=>{fn(+s.value);v.textContent=fmt?fmt(+s.value):s.value;};s.oninput=u;u();}
 slider('brush','brushV',x=>cfg.brush=x);
 slider('density','densityV',x=>{cfg.density=x/100;updateAreaUI();},x=>x+'%');
 slider('stick','stickV',x=>cfg.stick=x/100,x=>(x/100).toFixed(2));
-slider('speed','speedV',x=>cfg.speed=x);
+slider('speed','speedV',x=>{cfg.speed=x;if(running)simWorker.postMessage({type:'cfg',cfg:{speed:cfg.speed,stick:cfg.stick,drift:cfg.drift,biasAng:cfg.biasAng}});});
 slider('repel','repelV',x=>cfg.repel=x);
-slider('drift','driftV',x=>cfg.drift=x/100,x=>(x/100).toFixed(2));
+slider('drift','driftV',x=>{cfg.drift=x/100;if(running)simWorker.postMessage({type:'cfg',cfg:{speed:cfg.speed,stick:cfg.stick,drift:cfg.drift,biasAng:cfg.biasAng}});},x=>(x/100).toFixed(2));
 slider('floor','floorV',x=>{cfg.floor=x;if(!running)render();});
 slider('maxh','maxhV',x=>{cfg.activeScale=x/100;if(!running)render();},x=>x+'%');
 slider('dim','dimV',x=>{cfg.dim=x/100;if(scrim)scrim.style.opacity=cfg.dim;},x=>x+'%');
 
-// drift direction dial (screen-intuitive: drag down -> ridges flow down)
 const pad=$('dialPad'),dot=$('dialDot');
 function setDial(e){const r=pad.getBoundingClientRect();
   const cx=r.left+r.width/2,cy=r.top+r.height/2;
-  const sa=Math.atan2(e.clientY-cy,e.clientX-cx);          // screen angle
-  cfg.biasAng=((360-(sa*180/Math.PI))%360+360)%360;        // to DA convention
-  dot.style.left=(50+Math.cos(sa)*38)+'%'; dot.style.top=(50+Math.sin(sa)*38)+'%';}
+  const sa=Math.atan2(e.clientY-cy,e.clientX-cx);
+  cfg.biasAng=((360-(sa*180/Math.PI))%360+360)%360;
+  dot.style.left=(50+Math.cos(sa)*38)+'%';dot.style.top=(50+Math.sin(sa)*38)+'%';
+  if(running)simWorker.postMessage({type:'cfg',cfg:{speed:cfg.speed,stick:cfg.stick,drift:cfg.drift,biasAng:cfg.biasAng}});}
 let dd=false;
 pad.onpointerdown=e=>{dd=true;pad.setPointerCapture(e.pointerId);setDial(e);};
 pad.onpointermove=e=>{if(dd)setDial(e);};
 pad.onpointerup=()=>dd=false;
-dot.style.left='50%';dot.style.top='88%';   // default down (biasAng 270)
+dot.style.left='50%';dot.style.top='88%';
 
-// falloff curve editor -> 256-entry LUT used by render/bake
-const cvp=$('curvePad'), cvx=cvp.getContext('2d'), CS=cvp.width;
+const cvp=$('curvePad'),cvx=cvp.getContext('2d'),CS=cvp.width;
 function bez(t,a,b,c,d){const u=1-t;return u*u*u*a+3*u*u*t*b+3*u*t*t*c+t*t*t*d;}
 function buildCurveLUT(){
-  const SX=new Float32Array(1025), SY=new Float32Array(1025);
-  for(let i=0;i<=1024;i++){const t=i/1024;
-    SX[i]=bez(t,0,curve.c1.x,curve.c2.x,1); SY[i]=bez(t,0,curve.c1.y,curve.c2.y,1);}
+  const SX=new Float32Array(1025),SY=new Float32Array(1025);
+  for(let i=0;i<=1024;i++){const t=i/1024;SX[i]=bez(t,0,curve.c1.x,curve.c2.x,1);SY[i]=bez(t,0,curve.c1.y,curve.c2.y,1);}
   let j=0;
   for(let i=0;i<256;i++){const x=i/255;
     while(j<1024&&SX[j+1]<x)j++;
     const x0=SX[j],x1=SX[j+1],den=(x1-x0)||1e-6,f=(x-x0)/den;
-    let y=SY[j]+(SY[j+1]-SY[j])*f; if(y<0)y=0;else if(y>1)y=1; curveLUT[i]=y;}
-}
+    let y=SY[j]+(SY[j+1]-SY[j])*f;if(y<0)y=0;else if(y>1)y=1;curveLUT[i]=y;}}
 function drawCurve(){
   cvx.clearRect(0,0,CS,CS);
-  cvx.strokeStyle='rgba(255,255,255,.05)'; cvx.lineWidth=1;
-  for(let i=1;i<4;i++){const p=CS*i/4; cvx.beginPath();cvx.moveTo(p,0);cvx.lineTo(p,CS);cvx.moveTo(0,p);cvx.lineTo(CS,p);cvx.stroke();}
-  cvx.strokeStyle='rgba(255,255,255,.12)'; cvx.beginPath();cvx.moveTo(0,CS);cvx.lineTo(CS,0);cvx.stroke();
-  const X=v=>v*CS, Y=v=>CS-v*CS;
+  cvx.strokeStyle='rgba(255,255,255,.05)';cvx.lineWidth=1;
+  for(let i=1;i<4;i++){const p=CS*i/4;cvx.beginPath();cvx.moveTo(p,0);cvx.lineTo(p,CS);cvx.moveTo(0,p);cvx.lineTo(CS,p);cvx.stroke();}
+  cvx.strokeStyle='rgba(255,255,255,.12)';cvx.beginPath();cvx.moveTo(0,CS);cvx.lineTo(CS,0);cvx.stroke();
+  const X=v=>v*CS,Y=v=>CS-v*CS;
   cvx.strokeStyle='rgba(217,139,95,.45)';
   cvx.beginPath();cvx.moveTo(X(0),Y(0));cvx.lineTo(X(curve.c1.x),Y(curve.c1.y));cvx.stroke();
   cvx.beginPath();cvx.moveTo(X(1),Y(1));cvx.lineTo(X(curve.c2.x),Y(curve.c2.y));cvx.stroke();
-  cvx.strokeStyle='#e8e3d3'; cvx.lineWidth=2; cvx.beginPath();
+  cvx.strokeStyle='#e8e3d3';cvx.lineWidth=2;cvx.beginPath();
   for(let i=0;i<=72;i++){const t=i/72,x=bez(t,0,curve.c1.x,curve.c2.x,1),y=bez(t,0,curve.c1.y,curve.c2.y,1);
     i?cvx.lineTo(X(x),Y(y)):cvx.moveTo(X(x),Y(y));}
   cvx.stroke();
   cvx.fillStyle='#d98b5f';
-  for(const h of [curve.c1,curve.c2]){cvx.beginPath();cvx.arc(X(h.x),Y(h.y),4.5,0,7);cvx.fill();}
-}
+  for(const h of[curve.c1,curve.c2]){cvx.beginPath();cvx.arc(X(h.x),Y(h.y),4.5,0,7);cvx.fill();}}
 let curveDrag=null;
 function moveCurve(e){const r=cvp.getBoundingClientRect();
-  let x=(e.clientX-r.left)/r.width, y=1-(e.clientY-r.top)/r.height;
-  x=x<0?0:x>1?1:x; y=y<0?0:y>1?1:y; curveDrag.x=x; curveDrag.y=y;
-  buildCurveLUT(); drawCurve(); if(!running)render();}
+  let x=(e.clientX-r.left)/r.width,y=1-(e.clientY-r.top)/r.height;
+  x=x<0?0:x>1?1:x;y=y<0?0:y>1?1:y;curveDrag.x=x;curveDrag.y=y;
+  buildCurveLUT();drawCurve();if(!running)render();}
 cvp.onpointerdown=e=>{const r=cvp.getBoundingClientRect();
-  const x=(e.clientX-r.left)/r.width, y=1-(e.clientY-r.top)/r.height;
+  const x=(e.clientX-r.left)/r.width,y=1-(e.clientY-r.top)/r.height;
   curveDrag=(Math.hypot(x-curve.c1.x,y-curve.c1.y)<Math.hypot(x-curve.c2.x,y-curve.c2.y))?curve.c1:curve.c2;
-  cvp.setPointerCapture(e.pointerId); moveCurve(e);};
+  cvp.setPointerCapture(e.pointerId);moveCurve(e);};
 cvp.onpointermove=e=>{if(curveDrag)moveCurve(e);};
 cvp.onpointerup=()=>{curveDrag=null;};
-buildCurveLUT(); drawCurve();
+buildCurveLUT();drawCurve();
 
-// undo/redo keyboard shortcuts
 window.addEventListener('keydown',e=>{
-  if(!(e.metaKey||e.ctrlKey))return; const k=e.key.toLowerCase();
-  if(k==='z'&&!e.shiftKey){ e.preventDefault(); undo(); }
-  else if((k==='z'&&e.shiftKey)||k==='y'){ e.preventDefault(); redo(); }
+  if(!(e.metaKey||e.ctrlKey))return;const k=e.key.toLowerCase();
+  if(k==='z'&&!e.shiftKey){e.preventDefault();undo();}
+  else if((k==='z'&&e.shiftKey)||k==='y'){e.preventDefault();redo();}
 });
-
-// warn before leaving if there's unsaved work (mask drawn, seeds, growth, or baked terrain)
 window.addEventListener('beforeunload',e=>{
-  const hasWork = seeds.length || stuck>seeds.length || bakedCount>0 || (mask&&mask.some(v=>v));
-  if(hasWork){ e.preventDefault(); e.returnValue=''; }
+  const hasWork=seeds.length||stuck>seeds.length||bakedCount>0||(mask&&mask.some(v=>v));
+  if(hasWork){e.preventDefault();e.returnValue='';}
 });
 
 function setTool(t){tool=t;
-  $('tMask').classList.toggle('on',t==='mask');
-  $('tLasso').classList.toggle('on',t==='lasso');
-  $('tErase').classList.toggle('on',t==='erase');
-  $('tSeed').classList.toggle('on',t==='seed');
+  $('tMask').classList.toggle('on',t==='mask');$('tLasso').classList.toggle('on',t==='lasso');
+  $('tErase').classList.toggle('on',t==='erase');$('tSeed').classList.toggle('on',t==='seed');
   const noBrush=(t==='seed'||t==='lasso');
-  $('brush').disabled=noBrush; $('brushCtl').classList.toggle('off',noBrush);}
+  $('brush').disabled=noBrush;$('brushCtl').classList.toggle('off',noBrush);}
 $('tMask').onclick=()=>setTool('mask');
 $('tLasso').onclick=()=>setTool('lasso');
 $('tErase').onclick=()=>setTool('erase');
 $('tSeed').onclick=()=>setTool('seed');
-$('paramToggle').onclick=()=>{ const d=$('drawer'); const open=d.classList.toggle('open');
-  $('paramToggle').classList.toggle('active',open); };
-$('bakeBtn').onclick=()=>{ pushUndo(); bakeAndClearMask(); };
-$('clrSeed').onclick=()=>{ pushUndo(); clearSeeds(); };
-$('clrAll').onclick=()=>{ pushUndo(); clearAll(); };
-$('reset').onclick=()=>{ if(running)stop(); pushUndo(); resetGrowth(); };
-$('run').onclick=()=>{ running?stop('stopped'):(pushUndo(),startSim()); };
-$('undoBtn').onclick=undo; $('redoBtn').onclick=redo;
+$('paramToggle').onclick=()=>{const d=$('drawer');const open=d.classList.toggle('open');
+  $('paramToggle').classList.toggle('active',open);};
+$('bakeBtn').onclick=()=>stopThen('',()=>{pushUndo();bakeAndClearMask();});
+$('clrSeed').onclick=()=>{pushUndo();clearSeeds();};
+$('clrAll').onclick=()=>stopThen('',()=>{pushUndo();clearAll();});
+$('reset').onclick=()=>stopThen('',()=>{pushUndo();resetGrowth();});
+$('run').onclick=()=>{
+  if(running)stopThen('stopped');
+  else if(cluster){pushUndo();startSim();}
+};
+$('undoBtn').onclick=undo;$('redoBtn').onclick=redo;
+/* ---------- pan / zoom ---------- */
+(()=>{
+  const stage=$('stage'), zh=$('zoomHud');
+  let vx=0, vy=0, vz=1;
+  let panning=false, spaceDown=false, pmx=0, pmy=0, midDown=false;
+  let zoomTimer=null;
+
+  function applyTransform(){
+    wrap.style.transform=`translate(${vx}px,${vy}px) scale(${vz})`;
+  }
+  function showZoom(){
+    zh.textContent=Math.round(vz*100)+'%';
+    zh.classList.add('vis');
+    clearTimeout(zoomTimer);
+    zoomTimer=setTimeout(()=>zh.classList.remove('vis'),1200);
+  }
+  function clampPan(){
+    if(!W||!H)return;
+    const sr=stage.getBoundingClientRect();
+    const sw=sr.width, sh=sr.height;
+    const cw=W*vz, ch=H*vz;
+    const margin=Math.min(sw,sh)*0.15;
+    const maxX=(cw/2+sw/2-margin); const minX=-(cw/2+sw/2-margin);
+    const maxY=(ch/2+sh/2-margin); const minY=-(ch/2+sh/2-margin);
+    vx=Math.max(minX,Math.min(maxX,vx));
+    vy=Math.max(minY,Math.min(maxY,vy));
+  }
+  function zoomTo(newZ, cx, cy){
+    const sr=stage.getBoundingClientRect();
+    // cx/cy relative to stage center
+    const ox=cx-sr.left-sr.width/2, oy=cy-sr.top-sr.height/2;
+    const ratio=newZ/vz;
+    vx=ox*(1-ratio)+vx*ratio;
+    vy=oy*(1-ratio)+vy*ratio;
+    vz=newZ;
+    clampPan(); applyTransform(); showZoom();
+  }
+  function fitView(){
+    if(!W||!H){vx=0;vy=0;vz=1;applyTransform();showZoom();return;}
+    const sr=stage.getBoundingClientRect();
+    const pad=80;
+    const zf=Math.min((sr.width-pad*2)/W,(sr.height-pad*2)/H,2);
+    vx=0; vy=0; vz=Math.max(.05,zf);
+    applyTransform(); showZoom();
+  }
+
+  // wheel: zoom toward cursor (Ctrl+wheel or plain wheel when canvas > viewport)
+  stage.addEventListener('wheel',e=>{
+    e.preventDefault();
+    const delta=e.ctrlKey?e.deltaY:e.deltaY;
+    const factor=e.ctrlKey?0.002:0.0012;
+    const newZ=Math.max(.05,Math.min(20, vz*Math.exp(-delta*factor)));
+    zoomTo(newZ, e.clientX, e.clientY);
+  },{passive:false});
+
+  // pinch-to-zoom is delivered as wheel with ctrlKey on trackpads — handled above
+
+  window._panActive=()=>spaceDown||panning;
+
+  // space bar -> pan mode
+  window.addEventListener('keydown',e=>{
+    if(e.code==='Space'&&!e.repeat&&!e.target.matches('input,textarea')){
+      e.preventDefault(); spaceDown=true; document.body.classList.add('panning');
+    }
+    // Ctrl+0 fit, Ctrl+= zoom in, Ctrl+- zoom out
+    if(e.ctrlKey||e.metaKey){
+      if(e.key==='0'){e.preventDefault();fitView();}
+      if(e.key==='='||e.key==='+'){e.preventDefault();
+        const sr=stage.getBoundingClientRect();
+        zoomTo(Math.min(20,vz*1.25),sr.left+sr.width/2,sr.top+sr.height/2);}
+      if(e.key==='-'){e.preventDefault();
+        const sr=stage.getBoundingClientRect();
+        zoomTo(Math.max(.05,vz/1.25),sr.left+sr.width/2,sr.top+sr.height/2);}
+    }
+  });
+  window.addEventListener('keyup',e=>{
+    if(e.code==='Space'){spaceDown=false; if(!midDown)document.body.classList.remove('panning');}
+  });
+
+  // pointer pan (space+drag or middle button)
+  stage.addEventListener('pointerdown',e=>{
+    if(e.button===1||(e.button===0&&spaceDown)){
+      e.preventDefault(); panning=true; midDown=(e.button===1);
+      pmx=e.clientX; pmy=e.clientY;
+      stage.setPointerCapture(e.pointerId);
+      document.body.classList.add('panning');
+    }
+  });
+  stage.addEventListener('pointermove',e=>{
+    if(!panning)return;
+    vx+=e.clientX-pmx; vy+=e.clientY-pmy;
+    pmx=e.clientX; pmy=e.clientY;
+    clampPan(); applyTransform(); showZoom();
+  });
+  stage.addEventListener('pointerup',e=>{
+    if(!panning)return; panning=false; midDown=false;
+    if(!spaceDown)document.body.classList.remove('panning');
+  });
+  stage.addEventListener('pointercancel',()=>{
+    panning=false; midDown=false;
+    if(!spaceDown)document.body.classList.remove('panning');
+  });
+  // suppress middle-click scroll
+  stage.addEventListener('auxclick',e=>{if(e.button===1)e.preventDefault();});
+
+  // re-fit when image loads
+  const _setup=setup;
+  window._fitAfterSetup=fitView;
+})();
+
 $('export').onclick=()=>{ if(!W)return; render();
   const tmp=document.createElement('canvas'); tmp.width=W; tmp.height=H;
   const t=tmp.getContext('2d'); t.fillStyle='#000'; t.fillRect(0,0,W,H); t.drawImage(out,0,0);
   tmp.toBlob(b=>{const a=document.createElement('a');
     a.href=URL.createObjectURL(b);a.download='dla-heightmap.png';a.click();},'image/png');};
 </script>
-</body>
-</html>
+
+
+</body></html>
