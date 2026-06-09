@@ -27,7 +27,7 @@
 
   /* ---- artboard stage ---- */
   #stage{position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
-    overflow:hidden;}
+    overflow:hidden; touch-action:none;}
   #wrap{position:relative; line-height:0; outline:1px solid var(--line);
     box-shadow:0 30px 90px rgba(0,0,0,.75);
     background:repeating-conic-gradient(#101113 0% 25%, transparent 0% 50%) 0 0/22px 22px;
@@ -787,7 +787,47 @@ $('undoBtn').onclick=undo;$('redoBtn').onclick=redo;
 
   // pinch-to-zoom is delivered as wheel with ctrlKey on trackpads — handled above
 
-  window._panActive=()=>spaceDown||panning;
+  // ---- two-finger touch: pinch-zoom + pan ----
+  // Capture phase so tp is populated before ui.onpointerdown fires,
+  // letting _panActive() block a new paint stroke when a second finger arrives.
+  const tp=new Map(); // pointerId -> {x,y}
+  window.addEventListener('pointerdown',e=>{
+    if(e.pointerType!=='touch')return;
+    tp.set(e.pointerId,{x:e.clientX,y:e.clientY});
+    if(tp.size>=2) painting=false; // cancel any in-progress brush stroke
+  },{capture:true});
+  window.addEventListener('pointermove',e=>{
+    if(e.pointerType!=='touch'||!tp.has(e.pointerId))return;
+    const prev=tp.get(e.pointerId);
+    const cur={x:e.clientX,y:e.clientY};
+    if(tp.size===2){
+      const otherId=[...tp.keys()].find(id=>id!==e.pointerId);
+      const o=tp.get(otherId);
+      // midpoint and distance before this move
+      const prevMx=(prev.x+o.x)/2, prevMy=(prev.y+o.y)/2;
+      const prevD=Math.hypot(prev.x-o.x,prev.y-o.y);
+      // midpoint and distance after
+      const curMx=(cur.x+o.x)/2, curMy=(cur.y+o.y)/2;
+      const curD=Math.hypot(cur.x-o.x,cur.y-o.y);
+      // pan by midpoint delta
+      vx+=curMx-prevMx; vy+=curMy-prevMy;
+      // zoom by distance ratio, centred on current midpoint
+      if(prevD>10){
+        const newZ=Math.max(.05,Math.min(20,vz*curD/prevD));
+        const sr=stage.getBoundingClientRect();
+        const ox=curMx-sr.left-sr.width/2, oy=curMy-sr.top-sr.height/2;
+        const ratio=newZ/vz;
+        vx=ox*(1-ratio)+vx*ratio; vy=oy*(1-ratio)+vy*ratio; vz=newZ;
+      }
+      clampPan(); applyTransform(); showZoom();
+      e.preventDefault();
+    }
+    tp.set(e.pointerId,cur);
+  },{passive:false,capture:true});
+  window.addEventListener('pointerup',  e=>{if(e.pointerType==='touch')tp.delete(e.pointerId);},{capture:true});
+  window.addEventListener('pointercancel',e=>{if(e.pointerType==='touch')tp.delete(e.pointerId);},{capture:true});
+
+  window._panActive=()=>spaceDown||panning||tp.size>=2;
 
   // space bar -> pan mode
   window.addEventListener('keydown',e=>{
@@ -809,8 +849,9 @@ $('undoBtn').onclick=undo;$('redoBtn').onclick=redo;
     if(e.code==='Space'){spaceDown=false; if(!midDown)document.body.classList.remove('panning');}
   });
 
-  // pointer pan (space+drag or middle button)
+  // pointer pan (space+drag or middle button) — mouse/pen only
   stage.addEventListener('pointerdown',e=>{
+    if(e.pointerType==='touch')return;
     if(e.button===1||(e.button===0&&spaceDown)){
       e.preventDefault(); panning=true; midDown=(e.button===1);
       pmx=e.clientX; pmy=e.clientY;
